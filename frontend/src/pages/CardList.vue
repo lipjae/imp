@@ -1,0 +1,45 @@
+<template>
+  <div class="q-pa-md">
+    <q-card class="my-card">
+      <q-card-section>
+        <div class="text-h6">카드사 리스트</div>
+      </q-card-section>
+
+      <q-markup-table>
+        <thead>
+          <tr>
+            <th class="text-center">no</th>
+            <th class="text-center">name</th>
+            <th class="text-center">code</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(card, index) in cards" v-bind:key="index">
+            <td class="text-center">{{index+1}}</td>
+            <td class="text-center">{{card.name}}</td>
+            <td class="text-center">{{card.code}}</td>
+          </tr>
+        </tbody>
+      </q-markup-table>
+    </q-card>
+  </div>
+
+</template>
+
+<script>
+export default {
+  name: 'CardList',
+  created () {
+    this.$axios.get('http://localhost:3000/api/getCard')
+      .then((res) => {
+        this.cards = res.data
+        console.log(res.data)
+      })
+  },
+  data () {
+    return {
+      cards: []
+    }
+  }
+}
+</script>
