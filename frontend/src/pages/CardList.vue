@@ -28,7 +28,7 @@
 
 <script>
 export default {
-  name: 'CardList',
+  name: 'GetCard',
   created () {
     this.$axios.get('http://localhost:3000/api/getCard')
       .then((res) => {

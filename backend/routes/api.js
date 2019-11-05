@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var cors = require('cors');
 const axios = require('axios');
+const mysql = require('mysql');
 
 
 let ACCESS_TOKEN = '';
@@ -61,6 +62,65 @@ router.get('/getCard',function(req,res){
         console.log(ACCESS_TOKEN);
     });  
 
+})
+
+router.post('/payment/order', function(req, res){
+    var reqParams = req.body
+
+    let conn = mysql.createConnection({
+        host: 'localhost',
+        user: 'root',
+        password: 'l1002212$$',
+        database: 'imp'
+    })   
+    
+    var sql = 'INSERT INTO imp_order(io_name,io_pg,io_pay_method,io_amount,buyer_email,buyer_name,buyer_tel,buyer_addr,buyer_postcode,io_merchant_uid) VALUES(?,?,?,?,?,?,?,?,?,?)'
+    
+    var params = Object.values(reqParams);
+    //merchant_uid
+    merchant_uid = 'order-' + new Date().getTime();
+    params.push(merchant_uid)
+
+    conn.connect()
+    conn.query(sql,params,function(err,result,fields){
+        // console.log(err)
+        var sqlRes = {}
+        sqlRes.res = result
+        sqlRes.uid = merchant_uid
+        console.log(sqlRes)
+        res.send(sqlRes)
+        // console.log(fields)
+    })
+    conn.end()
+
+})
+
+router.post('/payments/complete',function(req, res){
+
+    console.log(req.body);
+    var reqParams = req.body
+    
+    let connection = mysql.createConnection({
+        host: 'localhost',
+        user: 'root',
+        password: 'l1002212$$',
+        database: 'imp'
+    })
+
+    var sql = 'INSERT INTO imp_order(io_pg,io_pay_method,io_merchant_uid,io_name,io_amount) VALUES("inicis",?,?,?,?)'
+    var params = [
+        reqParams.pay_method,
+        reqParams.merchant_uid,
+        reqParams.name,
+        reqParams.paid_amount
+    ];
+    connection.connect();
+    connection.query(sql, params, function (error, results, fields){
+        console.log(results);
+        console.log(error);
+    });
+    connection.end()
+    
 })
 
 

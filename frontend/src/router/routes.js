@@ -9,7 +9,12 @@ const routes = [
   },
   {
     path: '/api',
-    component: () => import('pages/Api.vue')
+    component: () => import('layouts/ApiLayout'),
+    children: [
+      { path: '', component: () => import('pages/CardList.vue') },
+      { path: 'payment', component: () => import('pages/Payment.vue') }
+    ],
+    props: { default: true }
   }
 ]
 
