@@ -97,36 +97,37 @@ export default {
       delete priceInfo['__index']
       console.log(priceInfo)
 
-      this.$axios.post('http://localhost:3000/api/payment/order', priceInfo)
+      this.$axios.post('http://localhost:3000/api/payments/order', priceInfo)
         .then(orderRes => {
-          console.log(orderRes)
+          if (orderRes.data.res === true) {
+            console.log(orderRes.data)
+            console.log('저장 성공. 이니시스를 진행합니다..')
+            var requestParam = orderRes.data.params
+            // IMP.request_pay(param, callback) 호출
+            this.IMP.request_pay(requestParam, rsp => { // callback
+              if (rsp.success) {
+                this.$axios.post('http://localhost:3000/api/payments/complete', {
+                  imp_uid: rsp.imp_uid,
+                  merchant_uid: rsp.merchant_uid
+                }).then(completeRes => {
+                  console.log(completeRes)
+                })
+              } else {
+                alert('결제에 실패하였습니다. 에러 내용: ' + rsp.error_msg)
+                this.changeStatus(rsp.merchant_uid, 'cancel')
+              }
+            })
+          } else {
+            console.log(orderRes.data)
+            console.log('저장 실패')
+          }
         })
-
-      // IMP.request_pay(param, callback) 호출
-      // this.IMP.request_pay({ // param
-      //   pg: 'inicis',
-      //   pay_method: 'card',
-      //   merchant_uid: 'order-' + new Date().getTime(),
-      //   name: '벨로스터 N',
-      //   amount: 10,
-      //   buyer_email: 'dlwognscap@gmail.com',
-      //   buyer_name: '이재훈',
-      //   buyer_tel: '010-2245-5126',
-      //   buyer_addr: '서울특별시 강남구 신사동',
-      //   buyer_postcode: '01181'
-      // }, rsp => { // callback
-      //   if (rsp.success) {
-      //     // 결제 성공 시: 결제 승인 또는 가상계좌 발급에 성공한 경우
-      //     console.log(rsp)
-
-      //     this.$axios.post('http://localhost:3000/api/payments/complete', rsp).then(function (data) {
-      //       // 가맹점 서버 결제 API 성공시 로직
-      //       debugger
-      //     })
-      //   } else {
-      //     alert('결제에 실패하였습니다. 에러 내용: ' + rsp.error_msg)
-      //   }
-      // })
+    },
+    changeStatus (id, status) {
+      this.$axios.post('http://localhost:3000/api/payments/status', { merchantId: id, status: status })
+        .then(statusRes => {
+          console.log(statusRes)
+        })
     }
 
   }
