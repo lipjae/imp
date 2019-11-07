@@ -67,43 +67,16 @@ router.get('/getCard',function(req,res){
 
 })
 
-router.post('/payments/order', function(req, res){
-    var reqParams = req.body
-
-    let conn = mysql.createConnection({
-        host: 'localhost',
-        user: 'root',
-        password: 'l1002212$$',
-        database: 'imp'
-    })   
+router.post('/payments/order', async function(req, res){
     
-    var sql = 'INSERT INTO imp_order(io_name,io_pg,io_pay_method,io_amount,buyer_email,buyer_name,buyer_tel,buyer_addr,buyer_postcode,io_merchant_uid) VALUES(?,?,?,?,?,?,?,?,?,?)'
-    
-    var params = Object.values(reqParams);
-    //merchant_uid
-    merchant_uid = 'order-' + new Date().getTime();
-    reqParams['merchant_uid'] = merchant_uid
-    params.push(merchant_uid)
-
-    conn.connect()
-    conn.query(sql,params,function(err,result,fields){
-
-        var sqlRes = {}
-        if(result.affectedRows > 0){
-            sqlRes.res = true
-            sqlRes.uid = merchant_uid
-            sqlRes.inserId = result.insertId
-            sqlRes.params = reqParams
-        }else{
-            sqlRes.res = false
-        }
-        
-        
-        
-        res.send(sqlRes)
-        // console.log(fields)
-    })
-    conn.end()
+    retData = { is_success : false }
+    req.body['merchant_uid'] = 'order-' + new Date().getTime()
+    sqlRes = await Order.orderInser(req.body)
+    if(sqlRes.errno === undefined){
+        retData['is_success'] = true
+        retData['order'] = req.body
+    }
+    res.send(retData)
 
 })
 
@@ -150,30 +123,27 @@ router.post("/payments/complete", async (req, res) => {
     }
 });
 
-router.post('/payments/status', function(req,res){
+router.post('/payments/status',async function(req,res){
 
     var reqParams = req.body
-    console.log(reqParams)
-    let conn = mysql.createConnection({
-        host: 'localhost',
-        user: 'root',
-        password: 'l1002212$$',
-        database: 'imp'
-    })
-    
-    var sql = 'UPDATE imp_order SET status = ? WHERE io_merchant_uid = ?'
-    conn.query(sql, [reqParams.status, reqParams.merchantId],function(error, results, fields){
-        console.log(results);
-        res.send(results)
-    })
-
-    conn.end()  
+            
+    var res = await Order.statusChange(reqParams.status, reqParams.merchant_uid)
+    res.send(res)
     
 })
 
 router.get('/test', async function (req, res) {
 
-    const order = await Order.findById('order-1573031555939');
+    var order = await Order.test()
+    console.log(order)
+    res.send('123123')
+    // var test = await Order.test();
+    // console.log(test)
+    
+    return 
+    // var order = await Order.statusChange('complete', 'order-1573131822349')
+    // const order = await Order.findById('order-1573131822349');
+
     console.log('controller')
     console.log(order)
     res.send(order)

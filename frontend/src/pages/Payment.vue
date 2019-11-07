@@ -42,6 +42,7 @@ export default {
           sortable: true
         },
         { name: 'pg', align: 'center', label: 'pg', field: 'pg', sortable: true },
+        // { name: 'io_name', field: 'io_name' },
         { name: 'pay_method', label: '결제방법', field: 'pay_method', sortable: true },
         { name: 'amount', label: '가격', field: 'amount' },
         { name: 'buyer_email', label: '이메일', field: 'buyer_email' },
@@ -53,6 +54,7 @@ export default {
       data: [
         {
           name: '포르쉐 카이엔',
+          // io_name: '포르쉐 카이엔',
           pg: 'inicis',
           pay_method: 'card',
           amount: '10',
@@ -63,6 +65,7 @@ export default {
           buyer_postcode: '01181'
         },
         {
+          // name: '벨로스터 N',
           name: '벨로스터 N',
           pg: 'inicis',
           pay_method: 'card',
@@ -74,6 +77,7 @@ export default {
           buyer_postcode: '01181'
         },
         {
+          // name: '제네시스 gv80',
           name: '제네시스 gv80',
           pg: 'inicis',
           pay_method: 'card',
@@ -89,6 +93,7 @@ export default {
   },
   methods: {
     requestPay: function () {
+      event.preventDefault()
       if (this.priceInfo.length === 0) {
         alert('상품을 선택해주세요.')
         return false
@@ -99,12 +104,12 @@ export default {
 
       this.$axios.post('http://localhost:3000/api/payments/order', priceInfo)
         .then(orderRes => {
-          if (orderRes.data.res === true) {
-            console.log(orderRes.data)
+          console.log(orderRes.data)
+          if (orderRes.data.is_success === true) {
             console.log('저장 성공. 이니시스를 진행합니다..')
-            var requestParam = orderRes.data.params
+
             // IMP.request_pay(param, callback) 호출
-            this.IMP.request_pay(requestParam, rsp => { // callback
+            this.IMP.request_pay(orderRes.data.order, rsp => { // callback
               if (rsp.success) {
                 this.$axios.post('http://localhost:3000/api/payments/complete', {
                   imp_uid: rsp.imp_uid,
@@ -124,7 +129,7 @@ export default {
         })
     },
     changeStatus (id, status) {
-      this.$axios.post('http://localhost:3000/api/payments/status', { merchantId: id, status: status })
+      this.$axios.post('http://localhost:3000/api/payments/status', { merchant_uid: id, status: status })
         .then(statusRes => {
           console.log(statusRes)
         })
