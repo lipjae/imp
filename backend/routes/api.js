@@ -3,6 +3,7 @@ var router = express.Router();
 var cors = require('cors');
 const axios = require('axios');
 const mysql = require('mysql');
+const bodyPaser = require('body-parser')
 const Order = require('../model/Orders')
 
 
@@ -14,7 +15,7 @@ const API_URL = 'https://api.iamport.kr';
 
 // CORS 설정
 router.use(cors());
-
+router.use(bodyPaser.json())
 
 router.get('/',function(req,res){
     res.send('Hi');
@@ -129,17 +130,21 @@ router.post("/payments/complete", async (req, res) => {
             method: "get", 
             headers: { "Authorization": access_token } // 인증 토큰 Authorization header에 추가
       });
-      const paymentData = getPaymentData.data.response; // 조회한 결제 정보
+        const paymentData = getPaymentData.data.response; // 조회한 결제 정보
 
         const order = await Order.findById(paymentData.merchant_uid);
 
-        console.log(order)
+        const amountToBePaid = order.amount; // 결제 되어야 하는 금액
+        // 결제 검증하기
+        const { amount, status } = paymentData;    
 
-        console.log(req.body)
-        console.log(`${ imp_uid}`);
-        console.log(`${ merchant_uid }`);
-        console.log(`${ access_token }`);
-        // console.log(paymentData)
+        if (amount === amountToBePaid) { // 결제 금액 일치. 결제 된 금액 === 결제 되어야 하는 금액
+            await Orders.findByIdAndUpdate(merchant_uid, paymentData)  // DB에 결제 정보 저장
+
+            
+        }
+            
+        console.log(paymentData)
     } catch (e) {
         res.status(400).send(e);
     }
@@ -169,7 +174,8 @@ router.post('/payments/status', function(req,res){
 router.get('/test', async function (req, res) {
 
     const order = await Order.findById('order-1573031555939');
-
+    console.log('controller')
+    console.log(order)
     res.send(order)
 
 })
