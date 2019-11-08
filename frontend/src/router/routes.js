@@ -12,7 +12,8 @@ const routes = [
     component: () => import('layouts/ApiLayout'),
     children: [
       { path: '', component: () => import('pages/CardList.vue') },
-      { path: 'payment', component: () => import('pages/Payment.vue') }
+      { path: 'payment', component: () => import('pages/Payment.vue') },
+      { path: 'orderList', component: () => import('pages/OrderList.vue') }
     ],
     props: { default: true }
   }

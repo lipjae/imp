@@ -116,6 +116,15 @@ export default {
                   merchant_uid: rsp.merchant_uid
                 }).then(completeRes => {
                   console.log(completeRes)
+                  switch (completeRes.data.status) {
+                    case 'vbankIssued':
+                      // 가상계좌 발급 시 로직
+                      break
+                    case 'success':
+                      // 결제 성공 시 로직
+                      alert('결제가 완료되었습니다.')
+                      break
+                  }
                 })
               } else {
                 alert('결제에 실패하였습니다. 에러 내용: ' + rsp.error_msg)

@@ -1,6 +1,6 @@
-var express = require('express');
-var router = express.Router();
-var cors = require('cors');
+let express = require('express');
+let router = express.Router();
+let cors = require('cors');
 const axios = require('axios');
 const mysql = require('mysql');
 const bodyPaser = require('body-parser')
@@ -75,6 +75,8 @@ router.post('/payments/order', async function(req, res){
     if(sqlRes.errno === undefined){
         retData['is_success'] = true
         retData['order'] = req.body
+    }else{
+        retData['err'] = sqlRes
     }
     res.send(retData)
 
@@ -107,14 +109,35 @@ router.post("/payments/complete", async (req, res) => {
 
         const order = await Order.findById(paymentData.merchant_uid);
 
-        const amountToBePaid = order.amount; // 결제 되어야 하는 금액
+        const amountToBePaid = Number(order.amount); // 결제 되어야 하는 금액
         // 결제 검증하기
         const { amount, status } = paymentData;    
-
+        console.log('amount: ' + amount)
+        console.log('amoutToBePaid: ' + amountToBePaid)
         if (amount === amountToBePaid) { // 결제 금액 일치. 결제 된 금액 === 결제 되어야 하는 금액
-            await Orders.findByIdAndUpdate(merchant_uid, paymentData)  // DB에 결제 정보 저장
-
+            console.log(typeof (amount))
+            console.log(typeof (amountToBePaid))
             
+            let upRes = await Order.findByIdAndUpdate(merchant_uid, paymentData)  // DB에 결제 정보 저장
+            
+            switch (status) {
+                // case "ready": // 가상계좌 발급
+                //     // DB에 가상계좌 발급 정보 저장
+                //     const { vbank_num, vbank_date, vbank_name } = paymentData;
+                //     await Users.findByIdAndUpdate("/* 고객 id */", { $set: { vbank_num, vbank_date, vbank_name } });
+                //     // 가상계좌 발급 안내 문자메시지 발송
+                //     SMS.send({ text: `가상계좌 발급이 성공되었습니다. 계좌 정보 ${vbank_num} ${vbank_date} ${vbank_name}`});
+                //     res.send({ status: "vbankIssued", message: "가상계좌 발급 성공" });
+                // break;
+                case "paid": // 결제 완료
+                    res.send({ status: "success", message: "일반 결제 성공" });
+                break;
+            }
+            
+        } else { // 결제 금액 불일치. 위/변조 된 결제
+
+            throw { status: "forgery", message: "위조된 결제시도" };
+
         }
             
         console.log(paymentData)
@@ -125,23 +148,93 @@ router.post("/payments/complete", async (req, res) => {
 
 router.post('/payments/status',async function(req,res){
 
-    var reqParams = req.body
+    let retVal = {}
+    let reqParams = req.body
             
-    var res = await Order.statusChange(reqParams.status, reqParams.merchant_uid)
-    res.send(res)
+    retVal['sqlRes'] = await Order.statusChange(reqParams.status, reqParams.merchant_uid)
+
+    res.send(retVal)
     
+})
+
+router.get('/getOrder', async function (req, res){
+    
+    retvVal = await Order.getOrders()
+    res.send(retvVal)
+})
+
+router.post('/payments/cancel', async function (req,res){
+    try {
+        /* 액세스 토큰(access token) 발급 */
+        const getToken = await axios({
+            url: "https://api.iamport.kr/users/getToken",
+            method: "post", // POST method
+            headers: {
+                "Content-Type": "application/json"
+            },
+            data: {
+                imp_key: REST_API_KEY, // [아임포트 관리자] REST API키
+                imp_secret: REST_API_SECRET // [아임포트 관리자] REST API Secret
+            }
+        });
+        const { access_token } = getToken.data.response; // 엑세스 토큰
+      /* 결제정보 조회 */
+
+        let payData = await Order.findByParam({
+            merchant_uid : req.body.merchant_uid,
+            amount: req.body.cancel_request_amount
+        })
+        
+        if (payData.is_success == false){
+            res.send(payData)
+            return false;
+        }
+
+        const paymentData = payData
+        const { merchant_uid, amout } = paymentData; // 조회한 결제정보로부터 imp_uid 추출
+                
+        /* 아임포트 REST API로 결제환불 요청 */
+        const getCancelData = await axios({
+            url: "https://api.iamport.kr/payments/cancel",
+            method: "post",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": access_token // 아임포트 서버로부터 발급받은 엑세스 토큰
+            },
+            data: {
+                reason: req.body.reason, // 가맹점 클라이언트로부터 받은 환불사유
+                merchant_uid : merchant_uid, // imp_uid를 환불 고유번호로 입력,
+                amout: req.body.cancel_request_amount
+          }
+        });
+        const { response } = getCancelData.data; // 환불 결과
+        
+        await Order.statusChange(refund,merchant_uid)
+
+        res.json(response)
+      
+    } catch (error) {
+    res.status(400).send(error);
+}
 })
 
 router.get('/test', async function (req, res) {
 
-    var order = await Order.test()
+    let order = await Order.findByIdAndUpdate('order-1573182063867', {
+        amount: 10,
+        apply_num: '21025213',
+        bank_code: null,
+        bank_name: null,
+        buyer_addr: '서울특별시 강남구 신사동',
+        buyer_email: 'dlwognscap@gmail.com'
+    })
     console.log(order)
-    res.send('123123')
-    // var test = await Order.test();
+    res.send('order')
+    // let test = await Order.test();
     // console.log(test)
     
     return 
-    // var order = await Order.statusChange('complete', 'order-1573131822349')
+    // let order = await Order.statusChange('complete', 'order-1573131822349')
     // const order = await Order.findById('order-1573131822349');
 
     console.log('controller')

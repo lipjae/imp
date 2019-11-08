@@ -50,8 +50,8 @@
             <q-icon name="send" />
           </q-item-section>
 
-          <q-item-section>
-            Send
+          <q-item-section v-on:click="move('/api/orderList')">
+            orderList
           </q-item-section>
         </q-item>
 
