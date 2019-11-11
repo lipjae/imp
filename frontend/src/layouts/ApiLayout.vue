@@ -24,7 +24,7 @@
 
     <q-drawer show-if-above v-model="left" side="left" bordered>
       <div id="kakao_login">
-        <a href="https://kauth.kakao.com/oauth/authorize?client_id=b8bd2008ad9c38a214dd349e3260183d&redirect_uri=http://localhost:8080/api&response_type=code"><img src="/statics/img/kakao_login.png" alt=""></a>
+        <a href="http://localhost:3000/api/auth"><img src="/statics/img/kakao_login.png" alt=""></a>
       </div>
       <div>
         <button @click="kakao()">카카오 보내기</button>

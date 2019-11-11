@@ -1,6 +1,8 @@
 let express = require('express');
 let router = express.Router();
 let cors = require('cors');
+const qs = require('query-string')
+const rq = require('request')
 const axios = require('axios');
 const bodyPaser = require('body-parser')
 const Order = require('../model/Orders')
@@ -257,21 +259,75 @@ router.post('/test', async function (req, res) {
     // }
     
 })
+router.get('/auth', async function(req,res){
+    
+    if(req.query.code == undefined){
+        res.redirect('https://kauth.kakao.com/oauth/authorize?client_id=b8bd2008ad9c38a214dd349e3260183d&redirect_uri=http://localhost:3000/api/auth&response_type=code')
+    }else{
+        // console.log(req.query.code)
+        
+        // var result = await rq.post({
+        //     url: 'https://kauth.kakao.com/oauth/token',
+        //     form : {
+        //         grant_type: 'authorization_code',
+        //         client_id: 'b8bd2008ad9c38a214dd349e3260183d',
+        //         redirect_uri: 'http://localhost:3000/api/auth',
+        //         code: req.query.code
+        //     }
+        // },
+        // await function(err,rqRes,body) {
+        //     // console.log(err)
+        //     // console.log(rqRes)
+        //     console.log(body)
+        //     return body            
+        // })
+        // console.log(result.body)
+        // res.send(result.body)
 
+        console.log(req.query.code)    
+        
+        var data = qs.stringify({
+            'grant_type': 'authorization_code',
+            'client_id': 'b8bd2008ad9c38a214dd349e3260183d',
+            'redirect_uri': 'http://localhost:3000/api/auth',
+            'code': req.query.code
+        })
+        console.log(data)
+        
+        try {
+            var result =  await axios.post('https://kauth.kakao.com/oauth/token',data)
+            console.log(result.data)    
+            res.send(result.data)
+        } catch (error) {
+            console.log(error)
+        }
+        
+
+        
+        
+    }
+    
+})
 router.post('/kakaoMessage', async function (req, res) {
 
+    console.log(qs.stringify({
+        grant_type: 'authorization_code',
+        client_id: 'b8bd2008ad9c38a214dd349e3260183d',
+        redirect_uri: 'http://localhost:8080/api',
+        code: req.body.token
+    }))
     var result = await axios({
         methods: 'POST',
         url: 'https://kauth.kakao.com/oauth/token',
         headers: {
             'Content-type': 'application/x-www-form-urlencoded;charset=utf-8'
         },
-        data: {
+        data: qs.stringify({
             grant_type: 'authorization_code',
             client_id: 'b8bd2008ad9c38a214dd349e3260183d',
-            redirect_uri: 'http://localhost:3000/kakaoMessage',
+            redirect_uri: 'http://localhost:3000/auth',
             code: req.body.token
-        }
+        })
     })
 
     res.send(result)
