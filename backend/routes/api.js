@@ -2,13 +2,12 @@ let express = require('express');
 let router = express.Router();
 let cors = require('cors');
 const axios = require('axios');
-const mysql = require('mysql');
 const bodyPaser = require('body-parser')
 const Order = require('../model/Orders')
 
 
 let ACCESS_TOKEN = '';
-const IMP_CODE = 'imp92549566';
+// const IMP_CODE = 'imp92549566';
 const REST_API_KEY = '4268003460001225';
 const REST_API_SECRET = 'LwWYeFvDXar3dOyTSzZ0McvHp36nDM4pj0oxGTbE3DHhrgajP9jBmPjLTq9xdeWwek4UdfzhSgykxJDn';
 const API_URL = 'https://api.iamport.kr';
@@ -108,7 +107,8 @@ router.post("/payments/complete", async (req, res) => {
         const paymentData = getPaymentData.data.response; // 조회한 결제 정보
 
         const order = await Order.findById(paymentData.merchant_uid);
-
+        console.log(order)
+        console.log(order.amount)
         const amountToBePaid = Number(order.amount); // 결제 되어야 하는 금액
         // 결제 검증하기
         const { amount, status } = paymentData;    
@@ -207,10 +207,11 @@ router.post('/payments/cancel', async function (req,res){
                 amout: req.body.cancel_request_amount
           }
         });
+        
         const { response } = getCancelData.data; // 환불 결과
         
-        await Order.statusChange(refund,merchant_uid)
-
+        await Order.statusChange('refund',merchant_uid)
+        
         res.json(response)
       
     } catch (error) {
@@ -220,28 +221,41 @@ router.post('/payments/cancel', async function (req,res){
 
 router.get('/test', async function (req, res) {
 
-    let order = await Order.findByIdAndUpdate('order-1573182063867', {
-        amount: 10,
-        apply_num: '21025213',
-        bank_code: null,
-        bank_name: null,
-        buyer_addr: '서울특별시 강남구 신사동',
-        buyer_email: 'dlwognscap@gmail.com'
-    })
-    console.log(order)
-    res.send('order')
-    // let test = await Order.test();
-    // console.log(test)
+    try{
+        var sqlRes= await Order.findByParam({
+            merchant_uid : 'order-1573365472099',
+            amount: 10
+        })
+        res.send(view)
+    }catch(e){
+        console.log(e)
+        res.sendStatus(404).send(e)
+    }
     
-    return 
-    // let order = await Order.statusChange('complete', 'order-1573131822349')
-    // const order = await Order.findById('order-1573131822349');
-
-    console.log('controller')
-    console.log(order)
-    res.send(order)
-
 })
 
+router.post('/test', async function (req, res) {
+
+    try{
+        var sqlRes= await Order.findByParam({
+            merchant_uid : 'order-1573365472099',
+            amount: 10
+        })
+        res.send(sqlRes)
+    }catch(e){
+        console.log(e)
+        res.sendStatus(404).send(e)
+    }
+
+    // try{
+    //     let view = await Order.orderInser({name:'test'})
+    //     console.log(view)
+    //     res.send(view)
+    // }catch(e){
+    //     console.log(e)
+    //     res.sendStatus(404).send(e)
+    // }
+    
+})
 
 module.exports = router;

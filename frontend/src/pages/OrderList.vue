@@ -76,8 +76,10 @@ export default {
         }
       }).then(data => {
         alert('환불 성공')
-      }).catch(function (error) {
+        this.getOrder()
+      }).catch(errCatch => {
         alert('환불 실패')
+        console.log(errCatch)
       })
     }
   }

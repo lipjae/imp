@@ -1,5 +1,6 @@
 <template>
   <div class="q-pa-md">
+    <q-btn @click="test()">test</q-btn>
     <q-card class="my-card">
       <q-card-section>
         <div class="text-h6">카드사 리스트</div>
@@ -39,6 +40,17 @@ export default {
   data () {
     return {
       cards: []
+    }
+  },
+  methods: {
+    test: function () {
+      this.$axios.post('http://localhost:3000/api/test')
+        .then((res) => {
+          console.log(res.data)
+        })
+        .catch((err) => {
+          console.log(err)
+        })
     }
   }
 }

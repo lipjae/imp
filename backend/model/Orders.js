@@ -19,60 +19,78 @@ const pool = mysql.createPool({
 const promisePool = pool.promise()
 
 module.exports = {
-  test : async () => {
+  test : async () =>  {
 
-    let sqlRes = await knex('imp_order').where({merchant_uid : 'order-1573140301420'}).update({status : 'cancel'})
+    // let sqlRes = await knex('imp_order').where({merchant_uid : 'order-1573140301420'}).update({status : 'cancel'})
+
+    let sqlRes = await knex('imp_orderr').select()
   
     return sqlRes
   },
-  orderInser: async (insertData) => {
+  orderInser: async (insertData) => { //오더 정보 저장
     
-    let sqlRes = await knex('imp_order').insert(insertData)
-      .then((res) => {
-        return res
-      })
-      .catch((err) => {
-        return err
-      })
-      .finally(() => {
-        // knex.destroy()
-      })
+    let retData = {
+      is_success: false,
+      pk : '',
+      msg : ''
+    }
+    try{
+      var sqlRes = await knex('imp_order').insert(insertData)
+      
+        retData['is_success'] = true
+        retData['pk'] = sqlRes[0]
+        retData['msg'] = '저장 성공. 이니시스를 진행합니다..'
+      
+    }catch(e){
+      retData['msg'] = e
+    }
+    
+    console.log(retData)
 
-    return sqlRes
+    return retData
   },
   findById :async (merchant_uid) => {    
 
-    // let sql = 'SELECT * FROM imp_order WHERE io_merchant_uid = ?'
-
-    // let [rows] = await promisePool.query(sql, merchant_uid)
-
-    let [sqlRes] = await knex('imp_order').where({
-      merchant_uid : merchant_uid
-    })
-    .select()
+    try {
+      var [retData] = await knex('imp_order').where({
+        merchant_uid : merchant_uid
+      })
+      .select()
+            
+    } catch (e) {
+      var retData = e
+    }
     
-    return sqlRes;
+    
+    return retData;
     
   },
   findByParam : async (param) => {
-    console.log(param)
-    let sqlRes = knex('imp_order').where(param).select()
-    .then( await function (res){
-      let [retVal] = res
-      retVal['is_success'] = true
-      return retVal
-    })
-    .catch( await function (err){      
-      return {
-        is_success: 'fail'
-      }
-    })
+    let retVal = {}
+    let sqlRes = await knex('imp_order').where(param).select()
 
-    return sqlRes
+    try {
+      [retVal] = await knex('imp_order').where(param).select()
+      retVal['is_success'] = true
+    } catch (e) {
+      retVal['is_success'] = false
+      retVal = e
+    }    
+
+    return retVal
   },
   statusChange : async (status, merchant_uid) => {
-    
-    let sqlRes = await knex('imp_order').where({merchant_uid : merchant_uid}).update({status : status})
+    let retData = {
+      is_success : false,
+      msg : ''
+    } 
+    try{
+      let [sqlRes] = await knex('imp_order').where({merchant_uid : merchant_uid}).update({status : status})
+      retData['is_success'] = true
+      retData['msg'] = sqlRes
+    }catch(e){
+      retData['msg'] = e
+    }
         
     return sqlRes
 
@@ -84,11 +102,10 @@ module.exports = {
 
     let sqlRes = await knex('imp_order').where({ merchant_uid: merchant_uid }).update({ status: 'paid', pay_info: JSON.stringify(paymentData) })
 
-    console.log(sqlRes)
     return sqlRes
   },
   getOrders: async () => {
-    let sqlRes = await knex('imp_order').select()
+    let sqlRes = await knex('imp_order').where({ status: 'paid'}).select()
     
     return sqlRes
   }
