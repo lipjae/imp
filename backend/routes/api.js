@@ -258,4 +258,68 @@ router.post('/test', async function (req, res) {
     
 })
 
+router.post('/kakaoMessage', async function (req, res) {
+
+    var result = await axios({
+        methods: 'POST',
+        url: 'https://kauth.kakao.com/oauth/token',
+        headers: {
+            'Content-type': 'application/x-www-form-urlencoded;charset=utf-8'
+        },
+        data: {
+            grant_type: 'authorization_code',
+            client_id: 'b8bd2008ad9c38a214dd349e3260183d',
+            redirect_uri: 'http://localhost:3000/kakaoMessage',
+            code: req.body.token
+        }
+    })
+
+    res.send(result)
+    return
+    try {
+        var result = await axios({
+            methods: 'POST',
+            url: 'https://kauth.kakao.com/oauth/token',
+            headers: {
+                'Content-type': 'application/x-www-form-urlencoded;charset=utf-8'
+            },
+            data: {
+                grant_type: 'authorization_code',
+                client_id: 'b8bd2008ad9c38a214dd349e3260183d',
+                redirect_uri: 'http://localhost:3000/kakaoMessage',
+                code: req.body.token
+            }
+        })
+        res.send(result)
+    } catch (error) {
+        res.send(error)
+    }
+    
+
+    
+    return 
+    axios({
+        methods: 'GET',
+        url: 'https://kapi.kakao.com/v1/api/talk/profile',
+        headers: {
+            Authorization: 'Bearer 1HVgCFbTzIPWutTJN8u9Qw8H2H0EXkGMS9687ZoLVoWZ50VzlpyQjNQLhs26uOaX75bObQopdbMAAAFuWZS2-A' 
+        }
+    }).then(res => {
+        console.log(res)
+    })
+
+    res.send(req.body.token)
+    return
+    await axios({
+        method : 'GET',
+        url: 'http://kauth.kakao.com/oauth/authorize?client_id=b8bd2008ad9c38a214dd349e3260183d&redirect_uri=http://localhost:3000/api/kakaoMessage&response_type=code'
+    }).then(res => {
+        console.log('성공')
+        res.send(res)
+    }).catch(err => {
+        console.log('실패')
+        res.send(err)
+    })
+})
+
 module.exports = router;

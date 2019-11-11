@@ -5,7 +5,7 @@
     <q-btn label="결제하기" color="primary" @click="requestPay" class="q-mb-md" />
       <q-table
         title="Treats"
-        :data="data"
+        :data="payData"
         :columns="columns"
         row-key="name"
         selection="single"
@@ -16,7 +16,9 @@
         결제정보: {{ JSON.stringify(priceInfo) }}
       </div>
     </div>
-
+    <div>
+      <img src="statics/img/prosche.jpg">
+    </div>
   </div>
 </template>
 
@@ -24,6 +26,10 @@
 export default {
   name: 'Payment',
   created () {
+    this.$axios.get('/statics/json/goods.json')
+      .then(data => {
+        this.payData = data.data
+      })
     this.IMP = window.IMP
     this.IMP.init('imp92549566')
   },
@@ -51,43 +57,8 @@ export default {
         { name: 'buyer_addr', label: '구매자 주소', field: 'buyer_addr' },
         { name: 'buyer_postcode', label: '구매자 우편번호', field: 'buyer_postcode' }
       ],
-      data: [
-        {
-          name: '포르쉐 카이엔',
-          // io_name: '포르쉐 카이엔',
-          pg: 'inicis',
-          pay_method: 'card',
-          amount: '10',
-          buyer_email: 'dlwognscap@gmail.com',
-          buyer_name: '이재훈',
-          buyer_tel: '010-22445-5126',
-          buyer_addr: '서울특별시 강남구 신사동',
-          buyer_postcode: '01181'
-        },
-        {
-          // name: '벨로스터 N',
-          name: '벨로스터 N',
-          pg: 'inicis',
-          pay_method: 'card',
-          amount: '10',
-          buyer_email: 'dlwognscap@gmail.com',
-          buyer_name: '이재훈',
-          buyer_tel: '010-22445-5126',
-          buyer_addr: '서울특별시 강남구 신사동',
-          buyer_postcode: '01181'
-        },
-        {
-          // name: '제네시스 gv80',
-          name: '제네시스 gv80',
-          pg: 'inicis',
-          pay_method: 'card',
-          amount: '10',
-          buyer_name: '이재훈',
-          buyer_email: 'dlwognscap@gmail.com',
-          buyer_tel: '010-22445-5126',
-          buyer_addr: '서울특별시 강남구 신사동',
-          buyer_postcode: '01181'
-        }
+      payData: [
+
       ]
     }
   },

@@ -23,6 +23,12 @@
     </q-header>
 
     <q-drawer show-if-above v-model="left" side="left" bordered>
+      <div id="kakao_login">
+        <a href="https://kauth.kakao.com/oauth/authorize?client_id=b8bd2008ad9c38a214dd349e3260183d&redirect_uri=http://localhost:8080/api&response_type=code"><img src="/statics/img/kakao_login.png" alt=""></a>
+      </div>
+      <div>
+        <button @click="kakao()">카카오 보내기</button>
+      </div>
       <!-- drawer content -->
       <q-list padding class="menu-list">
         <q-item clickable active v-ripple>
@@ -93,7 +99,20 @@ export default {
   methods: {
     move (locate) {
       this.$router.push(locate)
+    },
+    kakao () {
+      if (this.$route.query.code) {
+        console.log(this.$route.query.code)
+        this.$axios.post('http://localhost:3000/api/kakaoMessage', { token: this.$route.query.code }).then(res => {
+          console.log(res)
+        })
+      }
     }
   }
 }
 </script>
+<style>
+  #kakao_login{
+    margin:5px;
+  }
+</style>
