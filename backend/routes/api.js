@@ -239,15 +239,73 @@ router.get('/test', async function (req, res) {
 
 router.post('/test', async function (req, res) {
     
+    // try {
+    //     var restRes = await axios.get('https://kapi.kakao.com/v1/api/talk/friends',{ headers : {
+    //         Authorization: 'Bearer '+KAKAO_ACCESS_TOKEN
+    //     }})
+    //     res.json(restRes.data)
+    // } catch (error) {
+        
+    //     res.send(error)
+    // }
+
     try {
-        var restRes = await axios.get('https://kapi.kakao.com/v1/api/talk/profile',{ headers : {
-            Authorization: 'Bearer '+KAKAO_ACCESS_TOKEN
-        }})
+
+        let params = { 
+            headers : {
+                Authorization: 'Bearer '+KAKAO_ACCESS_TOKEN
+            },
+            data: { 
+                template_object :   {
+                    "object_type": "feed",
+                    "content": {
+                        "title": "디저트 사진",
+                        "description": "아메리카노, 빵, 케익",
+                        "image_url": "http://mud-kage.kakao.co.kr/dn/NTmhS/btqfEUdFAUf/FjKzkZsnoeE4o19klTOVI1/openlink_640x640s.jpg",
+                        "image_width": 640,
+                        "image_height": 640,
+                        "link": {
+                        "web_url": "http://www.daum.net",
+                        "mobile_web_url": "http://m.daum.net",
+                        "android_execution_params": "contentId=100",
+                        "ios_execution_params": "contentId=100"
+                        }
+                    },
+                    "social": {
+                        "like_count": 100,
+                        "comment_count": 200,
+                        "shared_count": 300,
+                        "view_count": 400,
+                        "subscriber_count": 500
+                    },
+                    "buttons": [
+                        {
+                        "title": "웹으로 이동",
+                        "link": {
+                            "web_url": "http://www.daum.net",
+                            "mobile_web_url": "http://m.daum.net"
+                        }
+                        },
+                        {
+                        "title": "앱으로 이동",
+                        "link": {
+                            "android_execution_params": "contentId=100",
+                            "ios_execution_params": "contentId=100"
+                        }
+                        }
+                    ]
+                }
+            }
+        }
+
+        var restRes = await axios.get('https://kapi.kakao.com/v2/api/talk/memo/default/send',params)
         res.json(restRes.data)
     } catch (error) {
-        
+        console.log(error)
         res.send(error)
     }
+
+    
     
 
     // try{
