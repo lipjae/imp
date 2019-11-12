@@ -101,12 +101,9 @@ export default {
       this.$router.push(locate)
     },
     kakao () {
-      if (this.$route.query.code) {
-        console.log(this.$route.query.code)
-        this.$axios.post('http://localhost:3000/api/kakaoMessage', { token: this.$route.query.code }).then(res => {
-          console.log(res)
-        })
-      }
+      this.$axios.post('http://localhost:3000/api/test').then(res => {
+        console.log(res)
+      })
     }
   }
 }

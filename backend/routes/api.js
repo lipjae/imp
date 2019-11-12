@@ -9,6 +9,7 @@ const Order = require('../model/Orders')
 
 
 let ACCESS_TOKEN = '';
+let KAKAO_ACCESS_TOKEN = ''
 // const IMP_CODE = 'imp92549566';
 const REST_API_KEY = '4268003460001225';
 const REST_API_SECRET = 'LwWYeFvDXar3dOyTSzZ0McvHp36nDM4pj0oxGTbE3DHhrgajP9jBmPjLTq9xdeWwek4UdfzhSgykxJDn';
@@ -237,17 +238,17 @@ router.get('/test', async function (req, res) {
 })
 
 router.post('/test', async function (req, res) {
-
-    try{
-        var sqlRes= await Order.findByParam({
-            merchant_uid : 'order-1573365472099',
-            amount: 10
-        })
-        res.send(sqlRes)
-    }catch(e){
-        console.log(e)
-        res.sendStatus(404).send(e)
+    
+    try {
+        var restRes = await axios.get('https://kapi.kakao.com/v1/api/talk/profile',{ headers : {
+            Authorization: 'Bearer '+KAKAO_ACCESS_TOKEN
+        }})
+        res.json(restRes.data)
+    } catch (error) {
+        
+        res.send(error)
     }
+    
 
     // try{
     //     let view = await Order.orderInser({name:'test'})
@@ -296,8 +297,9 @@ router.get('/auth', async function(req,res){
         
         try {
             var result =  await axios.post('https://kauth.kakao.com/oauth/token',data)
+            KAKAO_ACCESS_TOKEN = result.data.access_token
             console.log(result.data)    
-            res.send(result.data)
+            res.redirect('http://localhost:8080/api?auth=success')
         } catch (error) {
             console.log(error)
         }
