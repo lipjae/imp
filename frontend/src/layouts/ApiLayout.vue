@@ -102,7 +102,7 @@ export default {
     },
     kakao () {
       this.$axios.post('http://localhost:3000/api/test').then(res => {
-        console.log(res)
+        console.log(res.data)
       })
     }
   }

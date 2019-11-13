@@ -1,7 +1,7 @@
 let express = require('express');
 let router = express.Router();
 let cors = require('cors');
-const qs = require('query-string')
+const qs = require('qs')
 const rq = require('request')
 const axios = require('axios');
 const bodyPaser = require('body-parser')
@@ -33,7 +33,6 @@ router.get('/getToken',function(req,res){
                 
         if(resdata.data.code == 0){
             ACCESS_TOKEN = resdata.data.response.access_token;  
-            console.log('인증토큰 : ' + ACCESS_TOKEN);
             res.send({
                 code : 0,
                 token : ACCESS_TOKEN
@@ -239,70 +238,43 @@ router.get('/test', async function (req, res) {
 
 router.post('/test', async function (req, res) {
     
-    // try {
-    //     var restRes = await axios.get('https://kapi.kakao.com/v1/api/talk/friends',{ headers : {
-    //         Authorization: 'Bearer '+KAKAO_ACCESS_TOKEN
-    //     }})
-    //     res.json(restRes.data)
-    // } catch (error) {
-        
-    //     res.send(error)
-    // }
-
     try {
-
-        let params = { 
-            headers : {
-                Authorization: 'Bearer '+KAKAO_ACCESS_TOKEN
-            },
-            data: { 
-                template_object :   {
-                    "object_type": "feed",
-                    "content": {
-                        "title": "디저트 사진",
-                        "description": "아메리카노, 빵, 케익",
-                        "image_url": "http://mud-kage.kakao.co.kr/dn/NTmhS/btqfEUdFAUf/FjKzkZsnoeE4o19klTOVI1/openlink_640x640s.jpg",
-                        "image_width": 640,
-                        "image_height": 640,
-                        "link": {
-                        "web_url": "http://www.daum.net",
-                        "mobile_web_url": "http://m.daum.net",
-                        "android_execution_params": "contentId=100",
-                        "ios_execution_params": "contentId=100"
-                        }
-                    },
-                    "social": {
-                        "like_count": 100,
-                        "comment_count": 200,
-                        "shared_count": 300,
-                        "view_count": 400,
-                        "subscriber_count": 500
-                    },
-                    "buttons": [
-                        {
-                        "title": "웹으로 이동",
-                        "link": {
-                            "web_url": "http://www.daum.net",
-                            "mobile_web_url": "http://m.daum.net"
-                        }
-                        },
-                        {
-                        "title": "앱으로 이동",
-                        "link": {
-                            "android_execution_params": "contentId=100",
-                            "ios_execution_params": "contentId=100"
-                        }
-                        }
-                    ]
-                }
-            }
-        }
-
-        var restRes = await axios.get('https://kapi.kakao.com/v2/api/talk/memo/default/send',params)
+        var restRes = await axios.get('https://kapi.kakao.com/v1/api/talk/friends',{ headers : {
+            Authorization: 'Bearer mAyzu2i5UixVFU9VeMIIFkagWNE6ZacEyFfZ1goqAq8AAAFuY2qwmA'
+        }})
         res.json(restRes.data)
     } catch (error) {
-        console.log(error)
-        res.send(error)
+        
+        res.send(error.response.data)
+    }
+
+    return
+
+    try {
+              
+        const config = { 
+            headers: { 
+                'Authorization': 'Bearer mAyzu2i5UixVFU9VeMIIFkagWNE6ZacEyFfZ1goqAq8AAAFuY2qwmA' 
+            } 
+        }
+        const data = qs.stringify({
+            template_object: JSON.stringify({
+                "object_type": "text",
+                "text": "하 진짜 드디어 보내지네 ...",
+                "link": {
+                    "web_url": "https://developers.kakao.com",
+                    "mobile_web_url": "https://developers.kakao.com"
+                },
+                "button_title": "바로 확인"
+            })
+        })
+        var restRes = await axios.post('https://kapi.kakao.com/v2/api/talk/memo/default/send', data, config)
+
+        res.send(restRes.data)
+        
+    } catch (error) {
+        console.log(error.response.data)
+        res.json(error.response.data)
     }
 
     
@@ -321,7 +293,8 @@ router.post('/test', async function (req, res) {
 router.get('/auth', async function(req,res){
     
     if(req.query.code == undefined){
-        res.redirect('https://kauth.kakao.com/oauth/authorize?client_id=b8bd2008ad9c38a214dd349e3260183d&redirect_uri=http://localhost:3000/api/auth&response_type=code')
+        res.redirect('https://kauth.kakao.com/oauth/authorize?client_id=b8bd2008ad9c38a214dd349e3260183d&redirect_uri=http://localhost:3000/api/auth&response_type=code&scope=talk_message,birthday,account_email,talk_message,gender,profile,friends')
+            // & scope=birthday, account_email, gender, profile
     }else{
         // console.log(req.query.code)
         
@@ -342,19 +315,14 @@ router.get('/auth', async function(req,res){
         // })
         // console.log(result.body)
         // res.send(result.body)
-
-        console.log(req.query.code)    
-        
-        var data = qs.stringify({
-            'grant_type': 'authorization_code',
-            'client_id': 'b8bd2008ad9c38a214dd349e3260183d',
-            'redirect_uri': 'http://localhost:3000/api/auth',
-            'code': req.query.code
-        })
-        console.log(data)
-        
+                                
         try {
-            var result =  await axios.post('https://kauth.kakao.com/oauth/token',data)
+            var result = await axios.post('https://kauth.kakao.com/oauth/token', qs.stringify({
+                'grant_type': 'authorization_code',
+                'client_id': 'b8bd2008ad9c38a214dd349e3260183d',
+                'redirect_uri': 'http://localhost:3000/api/auth',
+                'code': req.query.code
+            }))
             KAKAO_ACCESS_TOKEN = result.data.access_token
             console.log(result.data)    
             res.redirect('http://localhost:8080/api?auth=success')
