@@ -23,12 +23,6 @@
     </q-header>
 
     <q-drawer show-if-above v-model="left" side="left" bordered>
-      <div id="kakao_login">
-        <a href="http://localhost:3000/api/auth"><img src="/statics/img/kakao_login.png" alt=""></a>
-      </div>
-      <div>
-        <button @click="kakao()">카카오 보내기</button>
-      </div>
       <!-- drawer content -->
       <q-list padding class="menu-list">
         <q-item clickable active v-ripple>

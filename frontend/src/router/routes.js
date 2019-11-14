@@ -13,7 +13,9 @@ const routes = [
     children: [
       { path: '', component: () => import('pages/CardList.vue') },
       { path: 'payment', component: () => import('pages/Payment.vue') },
-      { path: 'orderList', component: () => import('pages/OrderList.vue') }
+      { path: 'orderList', component: () => import('pages/OrderList.vue') },
+      { path: 'login', component: () => import('pages/Login.vue') },
+      { path: 'kakao', component: () => import('pages/Kakao.vue') }
     ],
     props: { default: true }
   }

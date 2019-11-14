@@ -6,6 +6,7 @@ const rq = require('request')
 const axios = require('axios');
 const bodyPaser = require('body-parser')
 const Order = require('../model/Orders')
+const fs = require('fs-extra')
 
 
 let ACCESS_TOKEN = '';
@@ -223,16 +224,28 @@ router.post('/payments/cancel', async function (req,res){
 
 router.get('/test', async function (req, res) {
 
-    try{
-        var sqlRes= await Order.findByParam({
-            merchant_uid : 'order-1573365472099',
-            amount: 10
-        })
-        res.send(view)
-    }catch(e){
-        console.log(e)
-        res.sendStatus(404).send(e)
+    const file = './auth/kakao_access.json'
+    
+    try {
+        const result = await fs.writeJson(file, { test: 21231235 })    
+        const data = await fs.readJson(file)
+        res.send(data)
+    } catch (error) {
+        console.log(error)
     }
+    
+
+    
+    // try{
+    //     var sqlRes= await Order.findByParam({
+    //         merchant_uid : 'order-1573365472099',
+    //         amount: 10
+    //     })
+    //     res.send(view)
+    // }catch(e){
+    //     console.log(e)
+    //     res.sendStatus(404).send(e)
+    // }
     
 })
 
@@ -382,14 +395,17 @@ router.get('/auth', async function(req,res){
                 'code': req.query.code
             }))
             KAKAO_ACCESS_TOKEN = result.data.access_token
+            
+            await fs.writeJson('../auth/kakao_access.json', result.data)
             console.log(result.data)    
-            res.redirect('http://localhost:8080/api?auth=success')
+            res.redirect('http://localhost:8080/api/kakao?auth=success')    
+            
+            
+            
+            
         } catch (error) {
             console.log(error)
-        }
-        
-
-        
+        }      
         
     }
     
