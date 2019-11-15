@@ -84,7 +84,16 @@ module.exports = function (ctx) {
     devServer: {
       // https: true,
       // port: 8080,
-      open: true // opens browser window automatically
+      open: true, // opens browser window automatically
+      proxy: {
+        '/auth': {
+          target: 'http://localhost:3000/auth',
+          changeOrigin: true,
+          pathRewrite: {
+            '^/auth': ''
+          }
+        }
+      }
     },
 
     // animations: 'all', // --- includes all animations

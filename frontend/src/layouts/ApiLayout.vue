@@ -25,6 +25,17 @@
     <q-drawer show-if-above v-model="left" side="left" bordered>
       <!-- drawer content -->
       <q-list padding class="menu-list">
+
+        <q-item clickable v-ripple>
+          <q-item-section avatar>
+            <q-icon name="drafts" />
+          </q-item-section>
+
+          <q-item-section v-on:click="move('/api/login')">
+            Login
+          </q-item-section>
+        </q-item>
+
         <q-item clickable active v-ripple>
           <q-item-section avatar>
             <q-icon name="inbox" />
@@ -55,15 +66,6 @@
           </q-item-section>
         </q-item>
 
-        <q-item clickable v-ripple>
-          <q-item-section avatar>
-            <q-icon name="drafts" />
-          </q-item-section>
-
-          <q-item-section>
-            Drafts
-          </q-item-section>
-        </q-item>
       </q-list>
     </q-drawer>
 

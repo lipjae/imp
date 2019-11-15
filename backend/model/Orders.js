@@ -9,21 +9,13 @@ const DB_OPTION = {
 }
 const mysql = require('mysql2')
 const knex = require('knex')(DB_OPTION)
-// const async = require('async')
-const pool = mysql.createPool({
-  host: 'localhost',
-  user: 'root',
-  password: 'l1002212$$',
-  database: 'imp'
-})
-const promisePool = pool.promise()
 
 module.exports = {
   test : async () =>  {
 
     // let sqlRes = await knex('imp_order').where({merchant_uid : 'order-1573140301420'}).update({status : 'cancel'})
 
-    let sqlRes = await knex('imp_orderr').select()
+    let sqlRes = await knex('imp_order').select()
   
     return sqlRes
   },

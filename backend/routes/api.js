@@ -364,7 +364,7 @@ router.post('/test', async function (req, res) {
 router.get('/auth', async function(req,res){
     
     if(req.query.code == undefined){
-        res.redirect('https://kauth.kakao.com/oauth/authorize?client_id=b8bd2008ad9c38a214dd349e3260183d&redirect_uri=http://localhost:3000/api/auth&response_type=code&scope=talk_message,birthday,account_email,talk_message,gender,profile,friends')
+        res.redirect('https://kauth.kakao.com/oauth/authorize?client_id=b8bd2008ad9c38a214dd349e3260183d&redirect_uri=http://localhost:3000/auth&response_type=code&scope=talk_message,birthday,account_email,talk_message,gender,profile,friends')
             // & scope=birthday, account_email, gender, profile
     }else{
         // console.log(req.query.code)
@@ -398,7 +398,8 @@ router.get('/auth', async function(req,res){
             
             await fs.writeJson('../auth/kakao_access.json', result.data)
             console.log(result.data)    
-            res.redirect('http://localhost:8080/api/kakao?auth=success')    
+            res.json(result.data)
+            // res.redirect('http://localhost:8080/api/kakao?auth=success')    
             
             
             
