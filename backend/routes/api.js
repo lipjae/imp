@@ -224,15 +224,17 @@ router.post('/payments/cancel', async function (req,res){
 
 router.get('/test', async function (req, res) {
 
-    const file = './auth/kakao_access.json'
     
-    try {
-        const result = await fs.writeJson(file, { test: 21231235 })    
-        const data = await fs.readJson(file)
-        res.send(data)
-    } catch (error) {
-        console.log(error)
-    }
+    res.send('123')
+    // const file = './auth/kakao_access.json'
+    
+    // try {
+    //     const result = await fs.writeJson(file, { test: 21231235 })    
+    //     const data = await fs.readJson(file)
+    //     res.send(data)
+    // } catch (error) {
+    //     console.log(error)
+    // }
     
 
     
