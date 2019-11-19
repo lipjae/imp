@@ -33,9 +33,50 @@ module.exports = {
     }else{
       retMsg = '이미 가입된 회원입니다.';
     }
-
-
     
     return retMsg
+  },
+
+  socialUp : async (data) => {  
+    
+    let retVal = {
+      res : false,
+      msg: '로그인 성공'
+    };
+    
+    let is_user_where = {
+      id : data.id,
+      social_type: data.social_type
+    }
+    
+    var is_user = await knex('imp_user').where(is_user_where).select()
+    
+
+    if (is_user.length == 0) {
+
+      let sqlRes = await knex('imp_user').insert({
+        id: data.id,
+        token: data.token,
+        refresh_token: data.refresh_token,
+        social_type: data.social_type
+      })
+      
+      
+      if (sqlRes.length > 0)
+        retVal['res'] = true
+        retVal['msg'] = '회원가입 성공'
+
+    }else{
+
+      retVal['res'] = true
+
+    }
+
+    
+    
+    return retVal
+
   }
+
+
 }
