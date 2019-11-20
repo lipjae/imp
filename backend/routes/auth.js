@@ -23,9 +23,41 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 
-router.get('/login', function(req, res){
-  res.send('<div><a id="kakao_login" href="http://localhost:3000/api/auth"><img src="http://localhost:8080/statics/img/kakao_login.png" alt=""></a></div>')
+router.get('/login',function(req, res){
+
+  if(req.query.code == undefined){
+    
+    // & scope=birthday, account_email, gender, profile
+    res.redirect('https://kauth.kakao.com/oauth/authorize?client_id=b8bd2008ad9c38a214dd349e3260183d&redirect_uri=http://localhost:3000/auth/login&response_type=code&scope=talk_message,birthday,account_email,talk_message,gender,profile,friends')
+
+  }else{
+                              
+      try {
+          var result = await axios.post('https://kauth.kakao.com/oauth/token', qs.stringify({
+              'grant_type': 'authorization_code',
+              'client_id': 'b8bd2008ad9c38a214dd349e3260183d',
+              'redirect_uri': 'http://localhost:3000/api/auth',
+              'code': req.query.code
+          }))
+                    
+          await fs.writeJson('../auth/kakao_access.json', result.data)
+          console.log(result.data)    
+          res.json(result.data)
+          // res.redirect('http://localhost:8080/api/kakao?auth=success')    
+          
+          
+          
+          
+      } catch (error) {
+          console.log(error)
+      }      
+      
+  }
 })
+
+// router.get('/login', function(req, res){
+//   res.send('<div><a id="kakao_login" href="http://localhost:3000/api/auth"><img src="http://localhost:8080/statics/img/kakao_login.png" alt=""></a></div>')
+// })
 // router.get('/', async function(req,res)  {
 //   console.log(req.query.code);
 //   if (req.query.code == undefined) {
