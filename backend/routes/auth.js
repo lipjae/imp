@@ -6,7 +6,7 @@ const qs = require('qs')
 const rq = require('request')
 const axios = require('axios');
 const bodyPaser = require('body-parser')
-const auth = require('../model/Auth')
+const Auth = require('../model/Auth')
 const fs = require('fs-extra')
 
 
@@ -21,43 +21,75 @@ const firebaseConfig = {
   measurementId: "G-BP6E2QG7ZC"
 };
 
+
 firebase.initializeApp(firebaseConfig);
 
-router.get('/login',function(req, res){
+router.use(bodyPaser.json())
 
-  if(req.query.code == undefined){
-    
-    // & scope=birthday, account_email, gender, profile
-    res.redirect('https://kauth.kakao.com/oauth/authorize?client_id=b8bd2008ad9c38a214dd349e3260183d&redirect_uri=http://localhost:3000/auth/login&response_type=code&scope=talk_message,birthday,account_email,talk_message,gender,profile,friends')
+router.get('/login', function(req, res){
+  res.send('<div><a id="kakao_login" href="http://localhost:3000/api/auth"><img src="http://localhost:8080/statics/img/kakao_login.png" alt=""></a></div>')
+})
+
+router.get('/', async function(req, res){
+  console.log(req.query.code)
+  
+  if (req.query.code != undefined){
+
+    try {
+      var accessResult = await axios.post('https://kauth.kakao.com/oauth/token', qs.stringify({
+        'grant_type': 'authorization_code',
+        'client_id': 'b8bd2008ad9c38a214dd349e3260183d',
+        'redirect_uri': 'http://localhost:3000/auth',
+        'code': req.query.code
+      }))
+      console.log(accessResult.data)
+
+      console.log('인증토큰: ' + accessResult.data.access_token)
+      
+      var profile = await axios({
+        methods : 'POST',
+        url: 'https://kapi.kakao.com/v2/user/me',
+        headers: {
+          Authorization: 'Bearer ' + accessResult.data.access_token
+        }
+      })
+
+      console.log(profile.data)
+
+      let signRes = await Auth.socialUp({
+        id: profile.data.id,
+        token: accessResult.data.access_token,
+        refresh_token: accessResult.data.refresh_token,
+        social_type: 'kakao'
+      })
+
+      console.log('db result : ' )
+      console.log(signRes)
+      
+      
+      res.redirect('http://localhost:8080/api/kakao?auth=success')    
+    } catch (error) {
+      res.send(error)
+    }
 
   }else{
-                              
-      try {
-          var result = await axios.post('https://kauth.kakao.com/oauth/token', qs.stringify({
-              'grant_type': 'authorization_code',
-              'client_id': 'b8bd2008ad9c38a214dd349e3260183d',
-              'redirect_uri': 'http://localhost:3000/api/auth',
-              'code': req.query.code
-          }))
-                    
-          await fs.writeJson('../auth/kakao_access.json', result.data)
-          console.log(result.data)    
-          res.json(result.data)
-          // res.redirect('http://localhost:8080/api/kakao?auth=success')    
-          
-          
-          
-          
-      } catch (error) {
-          console.log(error)
-      }      
-      
+    res.redirect('http://localhsot:8000/api/login')
   }
 })
 
-// router.get('/login', function(req, res){
-//   res.send('<div><a id="kakao_login" href="http://localhost:3000/api/auth"><img src="http://localhost:8080/statics/img/kakao_login.png" alt=""></a></div>')
-// })
+router.get('/login/:type', function(req, res){
+        
+    switch (req.params.type){
+      case 'kakao' :
+        res.send('1')
+        
+        res.redirect('https://kauth.kakao.com/oauth/authorize?client_id=b8bd2008ad9c38a214dd349e3260183d&redirect_uri=http://localhost:3000/auth&response_type=code&scope=talk_message,birthday,account_email,talk_message,gender,profile,friends')
+        
+      break;
+    }
+
+    
+})
 // router.get('/', async function(req,res)  {
 //   console.log(req.query.code);
 //   if (req.query.code == undefined) {
