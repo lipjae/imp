@@ -7,7 +7,7 @@ var usersRouter = require('./routes/users');
 var api = require('./routes/api');
 var auth = require('./routes/auth');
 var session = require('express-session');
-
+let cors = require('cors');
 var app = express();
 
 // view engine setup
@@ -24,13 +24,8 @@ app.use(session({
   saveUninitialized: true
 }))
 
-app.use((req,res,next) => {
-  console.log(req.session)
-  req.session.userId = ''
-  req.session.login_type = ''
-  next()
-})
-
+// CORS 설정
+app.use(cors());
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/api',api);

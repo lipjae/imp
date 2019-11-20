@@ -79,6 +79,15 @@
 <script>
 export default {
   name: 'ApiLayOut',
+  beforeCreate () {
+    this.$axios.post('http://localhost:3000/auth/is_sess')
+      .then((res) => {
+        console.log(res)
+        if (res.data === false) {
+          this.$router.push('/api/login')
+        }
+      })
+  },
   created () {
     this.$axios.get('http://localhost:3000/api/getToken')
       .then((response) => {

@@ -41,7 +41,8 @@ module.exports = {
     
     let retVal = {
       res : false,
-      msg: '로그인 성공'
+      msg: '로그인 성공',
+      authType : 'signIn'
     };
     
     let is_user_where = {
@@ -63,6 +64,8 @@ module.exports = {
       
       
       if (sqlRes.length > 0)
+      
+        retVal['authType'] = 'signUp'
         retVal['res'] = true
         retVal['msg'] = '회원가입 성공'
 

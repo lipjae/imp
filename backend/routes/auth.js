@@ -1,7 +1,6 @@
 let express = require('express');
 let router = express.Router();
 var firebase = require("firebase/app");
-
 const qs = require('qs')
 const rq = require('request')
 const axios = require('axios');
@@ -26,26 +25,27 @@ firebase.initializeApp(firebaseConfig);
 
 router.use(bodyPaser.json())
 
-router.get('/login', function(req, res){
-  res.send('<div><a id="kakao_login" href="http://localhost:3000/api/auth"><img src="http://localhost:8080/statics/img/kakao_login.png" alt=""></a></div>')
-})
+// router.get('/login', function(req, res){
+//   res.send('<div><a id="kakao_login" href="http://localhost:3000/api/auth"><img src="http://localhost:8080/statics/img/kakao_login.png" alt=""></a></div>')
+// })
 
 router.get('/', async function(req, res){
-  console.log(req.query.code)
   
   if (req.query.code != undefined){
 
     try {
+
+      //kakao access token
       var accessResult = await axios.post('https://kauth.kakao.com/oauth/token', qs.stringify({
         'grant_type': 'authorization_code',
         'client_id': 'b8bd2008ad9c38a214dd349e3260183d',
         'redirect_uri': 'http://localhost:3000/auth',
         'code': req.query.code
       }))
+      
       console.log(accessResult.data)
 
-      console.log('인증토큰: ' + accessResult.data.access_token)
-      
+      // kakao user info
       var profile = await axios({
         methods : 'POST',
         url: 'https://kapi.kakao.com/v2/user/me',
@@ -55,7 +55,8 @@ router.get('/', async function(req, res){
       })
 
       console.log(profile.data)
-
+      
+      // 회원 등록 유무
       let signRes = await Auth.socialUp({
         id: profile.data.id,
         token: accessResult.data.access_token,
@@ -63,11 +64,17 @@ router.get('/', async function(req, res){
         social_type: 'kakao'
       })
 
-      console.log('db result : ' )
-      console.log(signRes)
+      if(signRes['res'] == true){
+        req.session.userId = profile.data.id
+        req.session.login_type = 'kakao'
+        req.session.access_token = accessResult.data.access_token
+        req.session.refresh_token = accessResult.data.refresh_token
+      }
+      console.log(req.session)
+      res.redirect('http://localhost:8080/api/kakao?auth='+signRes['res']+'&msg='+signRes['msg'])  
       
       
-      res.redirect('http://localhost:8080/api/kakao?auth=success')    
+          
     } catch (error) {
       res.send(error)
     }
@@ -81,14 +88,22 @@ router.get('/login/:type', function(req, res){
         
     switch (req.params.type){
       case 'kakao' :
-        res.send('1')
-        
+        console.log(req.params.type)
         res.redirect('https://kauth.kakao.com/oauth/authorize?client_id=b8bd2008ad9c38a214dd349e3260183d&redirect_uri=http://localhost:3000/auth&response_type=code&scope=talk_message,birthday,account_email,talk_message,gender,profile,friends')
         
       break;
-    }
+    }   
+})
 
-    
+router.post('/is_sess', function(req, res){
+  console.log(req.session)
+  if(req.session.userId == undefined){
+    res.send('false')
+  }else{
+    res.send('true')
+  }
+
+  
 })
 // router.get('/', async function(req,res)  {
 //   console.log(req.query.code);

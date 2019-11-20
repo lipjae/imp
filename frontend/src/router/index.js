@@ -2,6 +2,7 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 
 import routes from './routes'
+import axios from 'axios'
 
 Vue.use(VueRouter)
 
@@ -20,6 +21,19 @@ export default function (/* { store, ssrContext } */) {
     // quasar.conf.js -> build -> publicPath
     mode: process.env.VUE_ROUTER_MODE,
     base: process.env.VUE_ROUTER_BASE
+  })
+
+  Router.beforeEach(async (to, from, next) => {
+    console.log('Welcome! (beforeEach)')
+
+    var isLogin = await axios.post('http://localhost:3000/auth/is_sess')
+      .then((res) => res.data)
+    console.log(isLogin)
+    if (isLogin === false && to.path !== '/api/login') {
+      next('/api/login')
+    } else {
+      next()
+    }
   })
 
   return Router

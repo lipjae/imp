@@ -1,6 +1,5 @@
 let express = require('express');
 let router = express.Router();
-let cors = require('cors');
 const qs = require('qs')
 const rq = require('request')
 const axios = require('axios');
@@ -16,8 +15,7 @@ const REST_API_KEY = '4268003460001225';
 const REST_API_SECRET = 'LwWYeFvDXar3dOyTSzZ0McvHp36nDM4pj0oxGTbE3DHhrgajP9jBmPjLTq9xdeWwek4UdfzhSgykxJDn';
 const API_URL = 'https://api.iamport.kr';
 
-// CORS 설정
-router.use(cors());
+
 router.use(bodyPaser.json())
 
 router.get('/',function(req,res){

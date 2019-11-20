@@ -11,7 +11,7 @@
 
     <div class="login-frame">
       <div>
-        <a id="kakao_login" href="http://localhost:3000/auth/login">
+        <a id="kakao_login" href="http://localhost:3000/auth/login/kakao">
           <img src="/statics/img/kakao_login.png" alt="">
         </a>
         <a id="naver_login" href="#" disabled>
