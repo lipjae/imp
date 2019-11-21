@@ -11,13 +11,13 @@
 
     <div class="login-frame">
       <div>
-
-        <a id="naver_login" href="#" disabled>
-          <img src="/statics/img/naver_login.png" alt="">
-        </a>
-        <a id="kakao_login" @click="getKakaoToken()">
+        <a id="kakao_login" href="https://kauth.kakao.com/oauth/authorize?client_id=b8bd2008ad9c38a214dd349e3260183d&redirect_uri=http://localhost:3000/auth&response_type=code&scope=talk_message,birthday,account_email,talk_message,gender,profile,friends">
           <img src="/statics/img/kakao_login.png" alt="">
         </a>
+        <a id="naver_login"  disabled>
+          <img src="/statics/img/naver_login.png" alt="">
+        </a>
+
         <button @click="getUser()">유저정보 가져오기</button>
         <button @click="createToken()">커스텀 토큰 생성</button>
         <button @click="verifyToken()">커스텀 토큰 확인</button>
@@ -81,17 +81,8 @@ export default {
           console.log(res)
         })
     },
-    getKakaoToken: function () {
-      let v = this
+    getKakaoToken: async function () {
 
-      Kakao.Auth.login({
-        success: function (authObj) {
-          v.kakaoToken = authObj.access_token
-        },
-        fail: function (err) {
-          alert(JSON.stringify(err))
-        }
-      })
     }
   }
 }
