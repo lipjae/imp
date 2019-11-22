@@ -24,12 +24,14 @@ app.use(session({
   saveUninitialized: true
 }))
 
+
 // CORS 설정
 app.use(cors());
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/api',api);
 app.use('/auth',auth)
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

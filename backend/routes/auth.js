@@ -9,6 +9,9 @@ const bodyPaser = require('body-parser')
 const Auth = require('../model/Auth')
 const fs = require('fs-extra')
 const googleKey = require('../auth/firebase.json')
+var cookieParser = require('cookie-parser')
+var csrf = require('csurf')
+var csrfProtection = csrf({ cookie: true })
 
 const firebaseConfig = {
   apiKey: "AIzaSyAt4tSgkCiCC77ZmWvE2U_Hb1e5vsb14pI",
@@ -21,6 +24,8 @@ const firebaseConfig = {
   measurementId: "G-BP6E2QG7ZC"
 };
 
+
+
 firebase.initializeApp(firebaseConfig);
 admin.initializeApp({
   credential: admin.credential.cert(googleKey)
@@ -29,10 +34,12 @@ admin.initializeApp({
 
 
 router.use(bodyPaser.json())
+router.use(cookieParser())
 
-router.post('/getKakaotoken', (req, res) => {
+router.get('/test', csrfProtection, (req, res) => {
 
-  
+  res.send({ csrfToken: req.csrfToken() })
+
 })
 
 router.post('/verifyToken', (req, res) => {
@@ -64,15 +71,40 @@ router.post('/createToken',(req, res) => {
 
 router.post('/getUser', (req, res) => {
   
-  admin.auth().getUserByEmail('dlwognscap@gmail.com')
-    .then(function(userRecord){
-      console.log(userRecord)
+  // admin.auth().getUserByEmail('dlwognscap@gmail.com')
+  //   .then(function(userRecord){
+  //     console.log(userRecord)
+  //     res.send(userRecord.toJSON())
+  //   })
+  //   .catch(function(err){
+  //     console.log(err)
+  //     res.send(err)
+  //   })
+  admin.auth().getUser('kakao-1180319394')
+    .then(function (userRecord) {
+      // See the UserRecord reference doc for the contents of userRecord.
+      console.log('Successfully fetched user data:', userRecord.toJSON());
       res.send(userRecord.toJSON())
     })
-    .catch(function(err){
-      console.log(err)
-      res.send(err)
-    })
+    .catch(function (error) {
+      console.log('Error fetching user data:', error);
+      res.send(error)
+    });
+})
+
+router.post('/getLoginUser',(req, res) => {
+  console.log(req.session)
+  
+  firebase.auth().onAuthStateChanged(function (user) {
+    console.log(user)
+    if (user) {
+      res.send(user)
+      // User is signed in.
+    } else {
+      // No user is signed in.
+      res.send('null')
+    }
+  });
 })
 
 router.post('/sign/:type', (req, res) => {
@@ -155,34 +187,12 @@ router.get('/', async function(req, res){
 
     admin.auth().createCustomToken('kakao-'+profile.data.id)
       .then(function(customToken){
-        res.redirect('/auth/fireKakao?token='+customToken)
-        // res.send(customToken)
+        signInCustom(customToken)
       })
       .catch(function (error) {
         console.log('Error creating custom token:', error);
       });
-
-      
-      // // 회원 등록 유무
-      // let signRes = await Auth.socialUp({
-      //   id: profile.data.id,
-      //   token: accessResult.data.access_token,
-      //   refresh_token: accessResult.data.refresh_token,
-      //   social_type: 'kakao'
-      // })
-
-      // if(signRes['res'] == true){
-      //   req.session.userId = profile.data.id
-      //   req.session.login_type = 'kakao'
-      //   req.session.access_token = accessResult.data.access_token
-      //   req.session.refresh_token = accessResult.data.refresh_token
-      // }
-      // console.log(req)
-      // console.log('==========================')
-      // console.log(req.session)
-      // res.redirect('http://localhost:8080/api/kakao?auth='+signRes['res']+'&msg='+signRes['msg'])  
-      
-      
+     
           
     } catch (error) {
       res.send(error)
@@ -192,6 +202,20 @@ router.get('/', async function(req, res){
     res.redirect('http://localhsot:8000/api/login')
   }
 })
+
+function signInCustom(token){
+  
+    firebase.auth().signInWithCustomToken(token).then(function (success) {
+      console.log(success)
+      res.send('http://localhsot:8000/api/login')
+    }).catch(function (error) {
+      // Handle Errors here.
+      var errorCode = error.code;
+      var errorMessage = error.message;
+      res.send(error)
+      // ...
+    }); 
+}
 
 router.get('/fireKakao',(req, res) => {
   console.log(req.query.token)
@@ -223,17 +247,13 @@ router.get('/login/:type', function(req, res){
 })
 
 router.post('/is_sess', function(req, res){
+  console.log(req.session)
   if(req.session.userId == undefined){
     res.send('false')
   }else{
     res.send('true')
   }
   
-})
-
-router.get('/test', (req, res) => {
-  console.log(req)
-  res.send(req.session)
 })
 
 router.post('/signUp', async (req, res) => {
@@ -245,10 +265,73 @@ router.post('/signUp', async (req, res) => {
     res.send(retRes)
   } catch (error) {
     // res.send(error.response.data)  
-  }
+  } 
   
+})
 
-  
+
+router.post('/', async function (req, res) {
+
+  console.log(req.body.accessToken)
+
+  if (req.body.accessToken != undefined) {
+
+    let accessToken = req.body.accessToken
+    try {
+
+      // kakao user info
+      var profile = await axios({
+        methods: 'POST',
+        url: 'https://kapi.kakao.com/v2/user/me',
+        headers: {
+          Authorization: 'Bearer ' + accessToken
+        }
+      })
+
+      console.log(profile.data)
+      console.log('아이디:' + profile.data.id)
+
+      // firebase custom token
+      admin.auth().createCustomToken('kakao-' + profile.data.id)
+      .then(function (customToken){
+        
+        firebase.auth().signInWithCustomToken(customToken)
+          .then(function(createUser){
+            console.log(createUser.operationType)
+
+            var user = firebase.auth().currentUser;
+            if(user){
+              user.updateEmail(profile.data.kakao_account.email)
+            }
+
+            res.send(createUser.operationType)
+
+            req.session.userId = 'kakao-' + profile.data.id
+            console.log(req.session)
+          })
+
+            
+          .catch(function(err){
+            res.send(err)
+          })
+
+      }).catch(function(err){
+        res.send(err)
+      })
+
+        
+
+      
+      
+      
+
+    } catch (error) {
+      res.send(error)
+    }
+
+  } else {
+    res.send('login Fali!')
+  }
 })
 
 module.exports = router;
