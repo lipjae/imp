@@ -11,7 +11,10 @@
 
     <div class="login-frame">
       <div>
-        <a id="kakao_login" href="https://kauth.kakao.com/oauth/authorize?client_id=b8bd2008ad9c38a214dd349e3260183d&redirect_uri=http://localhost:3000/auth&response_type=code&scope=talk_message,birthday,account_email,talk_message,gender,profile,friends">
+        <!-- <a id="kakao_login" href="https://kauth.kakao.com/oauth/authorize?client_id=b8bd2008ad9c38a214dd349e3260183d&redirect_uri=http://localhost:3000/auth&response_type=code&scope=talk_message,birthday,account_email,talk_message,gender,profile,friends">
+          <img src="/statics/img/kakao_login.png" alt="">
+        </a> -->
+        <a id="kakao_login" @click="kakaoLogin()" alt="">
           <img src="/statics/img/kakao_login.png" alt="">
         </a>
         <a id="naver_login"  disabled>
@@ -21,6 +24,8 @@
         <button @click="getUser()">유저정보 가져오기</button>
         <button @click="createToken()">커스텀 토큰 생성</button>
         <button @click="verifyToken()">커스텀 토큰 확인</button>
+        <button @click="getLoginUser()">로그인한 유저 확인</button>
+        <button @click="getSession()">세션 확인</button>
       </div>
     </div>
   </div>
@@ -83,8 +88,36 @@ export default {
           console.log(res)
         })
     },
-    getKakaoToken: async function () {
+    getLoginUser: function () {
+      this.$axios.post('http://localhost:3000/auth/getLoginUser')
+        .then(function (res) {
+          console.log(res)
+        })
+    },
+    kakaoLogin: function () {
+      let v = this
+      Kakao.Auth.login({
+        success: function (authObj) {
+          console.log(authObj)
 
+          v.$axios.post('http://localhost:3000/auth', { accessToken: authObj.access_token })
+            .then(res => {
+              console.log(res)
+            })
+            .catch(err => {
+              alert(err)
+            })
+        },
+        fail: function (err) {
+          alert(JSON.stringify(err))
+        }
+      })
+    },
+    getSession: function () {
+      this.$axios.post('http://localhost:3000/auth/is_sess')
+        .then(function (res) {
+          console.log(res)
+        })
     }
   }
 }
