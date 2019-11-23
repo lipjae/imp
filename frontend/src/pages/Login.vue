@@ -27,8 +27,10 @@
 </template>
 
 <script>
-let Kakao = window.Kakao
-Kakao.init('85863bc58eeb21e016e2474f75ee1dec')
+// let Kakao = window.Kakao
+// Kakao.init('85863bc58eeb21e016e2474f75ee1dec')
+
+import KaKao from 'src/boot/kakao'
 export default {
   data () {
     return {
