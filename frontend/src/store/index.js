@@ -3,6 +3,8 @@ import Vuex from 'vuex'
 
 // import example from './module-example'
 
+import member from './modules/member'
+
 Vue.use(Vuex)
 
 /*
@@ -14,6 +16,21 @@ export default function (/* { ssrContext } */) {
   const Store = new Vuex.Store({
     modules: {
       // example
+      member
+    },
+    state: {
+      count: 4
+    },
+    getters: {
+      count : state => {
+        return state.count
+      } 
+    },
+    mutations: {
+      intCount : state => { state.count++}
+    },
+    actions : {
+      actionTest : context => {debugger}
     },
 
     // enable strict mode (adds overhead!)

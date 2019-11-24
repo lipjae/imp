@@ -9,6 +9,8 @@ Admin 키 Tooltip a8e55e278151d8f19af8c071b58827f2
 
 Kakao.init('85863bc58eeb21e016e2474f75ee1dec');
 
-export {
-  Kakao
-}
+// export  {
+//   Kakao
+// } 
+
+export default Kakao

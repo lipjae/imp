@@ -20,13 +20,10 @@
         <a id="naver_login"  disabled>
           <img src="/statics/img/naver_login.png" alt="">
         </a>
-
-        <button @click="getUser()">유저정보 가져오기</button>
-        <button @click="createToken()">커스텀 토큰 생성</button>
-        <button @click="verifyToken()">커스텀 토큰 확인</button>
-        <button @click="getLoginUser()">로그인한 유저 확인</button>
-        <button @click="getSession()">세션 확인</button>
       </div>
+    </div>
+    <div>
+      {{count}}
     </div>
   </div>
 </template>
@@ -35,7 +32,9 @@
 // let Kakao = window.Kakao
 // Kakao.init('85863bc58eeb21e016e2474f75ee1dec')
 
-import KaKao from 'src/boot/kakao'
+import Kakao from 'src/boot/kakao'
+import { mapActions, mapState, mapGetters, mapMutations } from 'vuex'
+
 export default {
   data () {
     return {
@@ -47,7 +46,18 @@ export default {
       kakaoToken: ''
     }
   },
+  computed: {
+    ...mapGetters({
+      
+    })
+  },
   methods: {
+    ...mapMutations({
+      
+    }),
+    ...mapActions({
+      afterLogin: 'member/afterLogin'
+    }),
     sign: function (type) {
       let email = this.user.email
       let password = this.user.password
@@ -95,30 +105,37 @@ export default {
         })
     },
     kakaoLogin: function () {
-      let v = this
-      Kakao.Auth.login({
-        success: function (authObj) {
-          console.log(authObj)
 
-          v.$axios.post('http://localhost:3000/auth', { accessToken: authObj.access_token })
-            .then(res => {
-              console.log(res)
-            })
-            .catch(err => {
-              alert(err)
-            })
+      var vm = this
+
+      Kakao.Auth.login({
+        success: function(authObj) {
+          // alert(JSON.stringify(authObj))
+          Kakao.API.request({
+            url: '/v1/user/me',
+              success: function(res) {
+                console.log(res)
+                
+                vm.afterLogin({type: 'kakao', data: res})
+                // alert(JSON.stringify(res))
+              // vm.afterLogin(res)
+            },
+              fail: function (error) {
+                alert(JSON.stringify(error))
+            }
+          });
         },
-        fail: function (err) {
-          alert(JSON.stringify(err))
+        fail: function(err) {
+          alert(JSON.stringify('로그인에 실패하셨습니다.'));
         }
-      })
+      });
     },
     getSession: function () {
       this.$axios.post('http://localhost:3000/auth/is_sess')
         .then(function (res) {
           console.log(res)
         })
-    }
+    }    
   }
 }
 </script>
