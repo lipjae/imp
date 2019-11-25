@@ -44,6 +44,12 @@ const actions = {
         uEmail = userData.data.kaccount_email
         uNickname = userData.data.properties.nickname
       break
+      
+      case 'naver' : 
+        uid = 'naver-' + userData.data.id
+        uEmail = userData.data.email
+        uNickname = userData.data.nickname
+      break
     }
     
     // 등록된 유저인지 확인

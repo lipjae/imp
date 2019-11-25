@@ -1,16 +1,24 @@
 
 
-var naverLogin = new naver.LoginWithNaverId({
-    clientId: "buniXVCiAaaHIjxxHXO0",
-    callbackUrl: "http://localhost:8080/api/login",
-    isPopup: false, /* 팝업을 통한 연동처리 여부 */
-  });
+var naver_id_login = new window.naver_id_login("buniXVCiAaaHIjxxHXO0", "http://localhost:8080/api/callback");
+// var state = naver_id_login.getUniqState();
+// naver_id_login.setButton("white", 2,40);
+// naver_id_login.setDomain("http://localhost:8080/");
+// naver_id_login.setState(state);
+// // naver_id_login.setPopup();
+// naver_id_login.init_naver_id_login();
+
+
+// naver_id_login.test = async function(token){
+//   return await $.ajax({
+// 		url: "https://openapi.naver.com/v1/nid/getUserProfile.json?response_type=json",
+// 		type: "GET",
+// 		data: {"access_token":token},
+// 		dataType: "jsonp",
+// 		jsonp: "oauth_callback"
+// 		});
+// }
 
 
 
-/* 설정정보를 초기화하고 연동을 준비 */
-naverLogin.init();
-
-// api_url = 'https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=buniXVCiAaaHIjxxHXO0&redirect_uri=http://localhost:8080/api/login&state=RAMDOM_STATE';
-
-export default naverLogin
+export default naver_id_login

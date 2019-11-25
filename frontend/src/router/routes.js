@@ -15,7 +15,8 @@ const routes = [
       { path: 'payment', component: () => import('pages/Payment.vue') },
       { path: 'orderList', component: () => import('pages/OrderList.vue') },
       { path: 'login', component: () => import('pages/Login.vue') },
-      { path: 'kakao', component: () => import('pages/Kakao.vue') }
+      { path: 'kakao', component: () => import('pages/Kakao.vue') },
+      { path: 'callback', component: () => import('pages/Callback.vue') }
     ],
     props: { default: true }
   }
