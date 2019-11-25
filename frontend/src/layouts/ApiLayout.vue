@@ -66,6 +66,10 @@
           </q-item-section>
         </q-item>
 
+        <q-item class="logout-btn" v-if="loginStatus == true">
+          <q-btn color="negative" label="logout" />
+        </q-item>
+
       </q-list>
     </q-drawer>
 
@@ -76,17 +80,18 @@
   </q-layout>
 </template>
 
+
+
 <script>
+
+import { mapGetters } from 'vuex'
+
 export default {
   name: 'ApiLayOut',
-  beforeCreate () {
-    // this.$axios.post('http://localhost:3000/auth/is_sess')
-    //   .then((res) => {
-    //     console.log(res)
-    //     if (res.data === false) {
-    //       this.$router.push('/api/login')
-    //     }
-    //   })
+  computed: {
+    ...mapGetters({
+      loginStatus: 'member/getLoginStatus'
+    })
   },
   created () {
     this.$axios.get('http://localhost:3000/api/getToken')
@@ -116,5 +121,9 @@ export default {
 <style>
   #kakao_login{
     margin:5px;
+  }
+  .logout-btn{
+    position: absolute;
+    bottom: 0;
   }
 </style>

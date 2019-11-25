@@ -9,9 +9,7 @@ const bodyPaser = require('body-parser')
 const Auth = require('../model/Auth')
 const fs = require('fs-extra')
 const googleKey = require('../auth/firebase.json')
-var cookieParser = require('cookie-parser')
-var csrf = require('csurf')
-var csrfProtection = csrf({ cookie: true })
+
 
 const firebaseConfig = {
   apiKey: "AIzaSyAt4tSgkCiCC77ZmWvE2U_Hb1e5vsb14pI",
@@ -34,15 +32,34 @@ admin.initializeApp({
 
 
 router.use(bodyPaser.json())
-router.use(cookieParser())
 
-router.get('/test', csrfProtection, (req, res) => {
+router.post('/fbSignUp',(req, res) => {
 
-  res.send({ csrfToken: req.csrfToken() })
+  var id = req.body.id
 
+  admin.auth().createCustomToken(id)
+    .then(function (customToken) {
+
+      firebase.auth().signInWithCustomToken(customToken)
+        .then(function (success) {
+          res.send(success)
+        })
+        .catch(function (error) {
+          // Handle Errors here.
+          var errorCode = error.code;
+          var errorMessage = error.message;
+          res.send(error)
+          // ...
+        }); 
+
+    })
+    .catch(function (error) {
+      res.send(error)
+      console.log('Error creating custom token:', error);
+    });
 })
 
-router.post('/verifyToken', (req, res) => {
+router.post('/verifyToken', (req, res) =>   {
   let idToken = req.body.token
   console.log(idToken)
   admin.auth().verifyIdToken(idToken)
