@@ -104,6 +104,11 @@ const actions = {
     return axios.post('/auth/fbCreateToken', uid).then(function(res){
       return res.data
     })
+  },
+  async signOut ({commit}) {
+    firebase_.auth().signOut()
+    commit('setLoginStatus',false)
+    commit('setCrntUser','')
   }
 }
 

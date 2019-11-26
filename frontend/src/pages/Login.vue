@@ -25,10 +25,6 @@
 
         <div id="naver_id_login"></div>
         <div id="naverIdLogin"></div>
-
-        <button @click="fbIsSignIn()">cookie test</button>
-        <button @click="sessTest()">sessTest</button>
-        <button @click="getSess()">getSess</button>
        
       </div>
     </div>
@@ -64,7 +60,7 @@ export default {
 
     if(this.loginInfo == false){
       var state = naver_id_login.getUniqState();
-      naver_id_login.setButton("white", 2,40);
+      naver_id_login.setButton("green", 3,45);
       naver_id_login.setDomain("http://localhost:8080/");
       naver_id_login.setState(state);
       // naver_id_login.setPopup();
@@ -140,6 +136,8 @@ export default {
 <style>
   h4,h5{text-align: center;}
   .column{margin:0px auto;}
+  #kakao_login{cursor: pointer;}
   #naver_login img{width:125px; margin-left:10px;}
+  #naver_id_login{display:inline-block}
   .login-frame{text-align:center;margin:20px;}
 </style>

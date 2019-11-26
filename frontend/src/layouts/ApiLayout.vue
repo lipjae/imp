@@ -67,7 +67,7 @@
         </q-item>
 
         <q-item class="logout-btn" v-if="loginStatus == true">
-          <q-btn color="negative" label="logout" />
+          <q-btn color="negative" label="logout" @click="signOut()" />
         </q-item>
 
       </q-list>
@@ -84,7 +84,7 @@
 
 <script>
 
-import { mapGetters } from 'vuex'
+import { mapGetters, mapActions } from 'vuex'
 import { auth } from 'src/boot/firebase'
 
 export default {
@@ -115,6 +115,9 @@ export default {
       this.$axios.post('http://localhost:3000/api/test').then(res => {
         console.log(res.data)
       })
+    },
+    signOut () {
+      this.$store.dispatch('member/signOut')
     }
   }
 }
