@@ -1,5 +1,5 @@
 
-import { database } from 'src/boot/firebase'
+import { database, auth, firebase_ } from 'src/boot/firebase'
 import  Kakao from 'src/boot/kakao'
 import axios from 'axios'
 
@@ -24,14 +24,7 @@ const mutations = {
   }
 }
 const actions = {
-  async insertTest(){
-    console.log('insertTest')
-    var insertRes = await database.ref('users').child('2').set({
-      test : 1,
-      test2 : 2
-    })
-    console.log(insertRes)
-  },
+   
   async afterLogin({ dispatch, commit, getters, rootGetters },userData) {
 
     var uid = '';
@@ -55,30 +48,62 @@ const actions = {
     // 등록된 유저인지 확인
     var dbData = await database.ref('users').child(uid).once('value');
     
-    if (dbData.val() == null) { // 등록되지 않은 유저일때
+    // 등록되지 않은 유저일때
+    if (dbData.val() == null) { 
       
-      // firebase 커스텀 토큰 발급 및 커스텀토큰으로 유저 등록
-      var signUpRes = await dispatch('fbSignUp',{id: uid})
+      //커스텀 토큰 발급
+      var ctmToken  = await dispatch('fbCreateToken',{uid : uid})
       
-      // 등록이 완료되면 DB에 유저정보 저장
-      if( signUpRes.data.user !== undefined){
+      // firebase 회원가입 및 로그인
+      firebase_.auth().signInWithCustomToken(ctmToken)
+        .then(function (signIn){
+          console.log(signIn)
+          // 등록이 완료되면 DB에 유저정보 저장
+          if (signIn.user !== undefined) {
+            
+            database.ref('users').child(uid).set({
+              email: uEmail,
+              nickname: uNickname
+            })
 
-        database.ref('users').child(uid).set({
-          email: uEmail,
-          nickname : uNickname
+            commit('setLoginStatus', true)
+          }
         })
+        .catch(function(error){
 
-        commit('setLoginStatus', true)
-      }
+        })  
       
-    }else{ // 등록된 유저일때
+      
+    // 등록된 유저일때
+    }else{ 
       commit('setCrntUser',dbData.val())
       commit('setLoginStatus', true)
+      //커스텀 토큰 갱신
+      var ctmToken = await dispatch('fbCreateToken', { uid: uid })
+
+      // 파이어베이스 로그인
+      firebase_.auth().signInWithCustomToken(ctmToken)
     }
     
   },
-  async fbSignUp ({},id) { 
-    return axios.post('http://localhost:3000/auth/fbSignUp', id)
+  isSignIn ({commit}) {
+    
+    auth.onAuthStateChanged(function (user) {
+      if (user) {
+        // User is signed in.
+        commit('setLoginStatus', true)
+      } else {
+        // No user is signed in.
+      }
+    });
+
+    
+
+  },
+  async fbCreateToken ({}, uid) {
+    return axios.post('/auth/fbCreateToken', uid).then(function(res){
+      return res.data
+    })
   }
 }
 

@@ -5,9 +5,9 @@ var admin = require("firebase-admin");
 const qs = require('qs')
 const rq = require('request')
 const axios = require('axios');
-const bodyPaser = require('body-parser')
+const bodyParser = require('body-parser')
+const cookieParser = require('cookie-parser')
 const Auth = require('../model/Auth')
-const fs = require('fs-extra')
 const googleKey = require('../auth/firebase.json')
 
 
@@ -31,32 +31,30 @@ admin.initializeApp({
 });
 
 
-router.use(bodyPaser.json())
+router.use(bodyParser.json())
+router.use(cookieParser())
 
-router.post('/fbSignUp',(req, res) => {
+router.post('/isSignIn', (req, res) => {
+  res.send(req.cookies.fbToken)
+})
 
-  var id = req.body.id
+router.post('/fbCreateToken',(req, res) => {
+  
+  var uid = req.body.uid
 
-  admin.auth().createCustomToken(id)
+  admin.auth().createCustomToken(uid)
     .then(function (customToken) {
-
-      firebase.auth().signInWithCustomToken(customToken)
-        .then(function (success) {
-          res.send(success)
-        })
-        .catch(function (error) {
-          // Handle Errors here.
-          var errorCode = error.code;
-          var errorMessage = error.message;
-          res.send(error)
-          // ...
-        }); 
-
+      console.log(customToken)
+      res.cookie('fbToken', customToken, { httpOnly: true })
+      res.send(customToken)
     })
     .catch(function (error) {
+      // Handle Errors here.
+      var errorCode = error.code;
+      var errorMessage = error.message;
       res.send(error)
-      console.log('Error creating custom token:', error);
-    });
+    })
+      
 })
 
 router.post('/verifyToken', (req, res) =>   {

@@ -85,6 +85,7 @@
 <script>
 
 import { mapGetters } from 'vuex'
+import { auth } from 'src/boot/firebase'
 
 export default {
   name: 'ApiLayOut',
@@ -93,7 +94,7 @@ export default {
       loginStatus: 'member/getLoginStatus'
     })
   },
-  created () {
+  created () {  
     this.$axios.get('http://localhost:3000/api/getToken')
       .then((response) => {
         console.log(response)

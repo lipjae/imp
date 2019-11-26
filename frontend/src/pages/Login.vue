@@ -25,6 +25,10 @@
 
         <div id="naver_id_login"></div>
         <div id="naverIdLogin"></div>
+
+        <button @click="fbIsSignIn()">cookie test</button>
+        <button @click="sessTest()">sessTest</button>
+        <button @click="getSess()">getSess</button>
        
       </div>
     </div>
@@ -35,6 +39,7 @@
 // let Kakao = window.Kakao
 // Kakao.init('85863bc58eeb21e016e2474f75ee1dec')
 
+import { auth } from 'src/boot/firebase'
 import Kakao from 'src/boot/kakao'
 import naver_id_login from 'src/boot/naver'
 import { mapActions, mapState, mapGetters, mapMutations } from 'vuex'
@@ -67,25 +72,6 @@ export default {
     }
 
 
-  },
-  created() {
-
-    
-    
-    if( this.$route.query.code !== undefined){
-      var data = {
-        grant_type : 'authorization_code',
-        client_id: 'buniXVCiAaaHIjxxHXO0',
-        client_secret : '85cUbSTGjd',
-        code: this.$route.query.code,
-        state: 'RAMDOM_STATE'
-      }
-      this.$axios.post('https://nid.naver.com/oauth2.0/token',data).then(function(res){
-        console.log(res)
-      }).catch(function(err){
-        console.log(err)
-      })
-    }
   },
   methods: {
     ...mapMutations({
@@ -120,12 +106,33 @@ export default {
         }
       });
     },
-    getSession: function () {
-      this.$axios.post('http://localhost:3000/auth/is_sess')
-        .then(function (res) {
-          console.log(res)
+    fbIsSignIn: function () {
+      var user  = auth.currentUser
+      console.log(user)
+      if(user === null){
+        this.$axios.post('/auth/fbIsSignIn')
+          .then(res => {
+
+          auth.signInWithCustomToken(res.data)
+            .then(function(success){
+              console.log(success)
+            })
+            .catch(function(err){
+              console.log(err)
+            })
+
+          })
+      }
+      
+    },
+    cookieTest: function () {
+
+      this.$axios.post('/auth/fbSignIn')
+        .then(res => {
+          console.log(res.data)
         })
-    }    
+    }
+    
   }
 }
 </script>
