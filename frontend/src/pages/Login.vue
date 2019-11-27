@@ -2,11 +2,70 @@
   <div class="q-pa-md">
 
     <h4>LOGIN</h4>
-    <div class="q-gutter-y-md column" style="max-width: 300px">
-      <q-input v-model="user.email" label="이메일" stack-label  />
-      <q-input v-model="user.password" type="password" label="비밀번호" stack-label  />
-      <q-btn color="secondary" label="로그인" no-caps @click="sign('in')"/>
-      <q-btn color="primary" label="회원가입" no-caps @click="sign('up')"/>
+    <div class="q-gutter-y-md column" style="max-width: 500px">
+      <q-input v-model="user.phoneNum" label="전화번호" stack-label  />
+      <q-input v-if="signComp.signIn" v-model="user.code" label="인증코드" stack-label  />
+      
+      <!-- <q-btn color="secondary" label="로그인" no-caps /> -->
+        <q-stepper
+          v-model="step"
+          vertical
+          color="primary"
+          animated
+        >
+          <q-step
+            :name="1"
+            title="회원가입 인증을 해주세요."
+            icon="settings"
+            :done="step > 1"
+          >
+            <div id="sign-in-button"></div>
+
+            <q-stepper-navigation>
+              <q-btn @click="step = 2" color="primary" label="Continue" />
+            </q-stepper-navigation>
+          </q-step>
+
+          <q-step
+            :name="2"
+            title="Create an ad group"
+            caption="Optional"
+            icon="create_new_folder"
+            :done="step > 2"
+          >
+            
+
+            <q-stepper-navigation>
+              <q-btn @click="step = 4" color="primary" label="Continue" />
+              <q-btn flat @click="step = 1" color="primary" label="Back" class="q-ml-sm" />
+            </q-stepper-navigation>
+          </q-step>
+
+          <q-step
+            :name="3"
+            title="Ad template"
+            icon="assignment"
+            disable
+          >
+            This step won't show up because it is disabled.
+          </q-step>
+
+          <q-step
+            :name="4"
+            title="Create an ad"
+            icon="add_comment"
+          >
+            Try out different ad text to see what brings in the most customers, and learn how to
+            enhance your ads using features like ad extensions. If you run into any problems with
+            your ads, find out how to tell if they're running and how to resolve approval issues.
+
+            <q-stepper-navigation>
+              <q-btn color="primary" label="Finish" />
+              <q-btn flat @click="step = 2" color="primary" label="Back" class="q-ml-sm" />
+            </q-stepper-navigation>
+          </q-step>
+        </q-stepper>
+      
     </div>
 
     <div class="login-frame">
@@ -35,7 +94,7 @@
 // let Kakao = window.Kakao
 // Kakao.init('85863bc58eeb21e016e2474f75ee1dec')
 
-import { auth } from 'src/boot/firebase'
+import { auth, firebase_ } from 'src/boot/firebase'
 import Kakao from 'src/boot/kakao'
 import naver_id_login from 'src/boot/naver'
 import { mapActions, mapState, mapGetters, mapMutations } from 'vuex'
@@ -47,6 +106,11 @@ export default {
         email: '',
         password: ''
       },
+      signComp: {
+        signIn : false
+      },
+      step: 1,
+      signUp : false,
       customToken: '',
       kakaoToken: ''
     }
@@ -65,8 +129,23 @@ export default {
       naver_id_login.setState(state);
       // naver_id_login.setPopup();
       naver_id_login.init_naver_id_login();
-    }
+    } 
 
+    window.recaptchaVerifier = new firebase_.auth.RecaptchaVerifier('sign-in-button', {
+      'size': 'normal',
+      'callback': function(response) {
+        // reCAPTCHA solved, allow signInWithPhoneNumber.
+        // ...
+      },
+      'expired-callback': function() {
+        // Response expired. Ask user to solve reCAPTCHA again.
+        // ...
+      }
+    });
+
+    recaptchaVerifier.render().then(function(widgetId) {
+      window.recaptchaWidgetId = widgetId;
+    });
 
   },
   methods: {
@@ -120,6 +199,29 @@ export default {
           })
       }
       
+    },
+    phoneAuth: function (){
+
+    },
+    signInUP: function () {
+
+      if(grecaptcha.getResponse(window.recaptchaWidgetId) === ''){
+        alert('인증체크를 해주세요.')
+      }
+      auth.settings.appVerificationDisabledForTesting = true;
+      var phoneNumber = '+821022455126';
+      var appVerifier = window.recaptchaVerifier;
+      auth.signInWithPhoneNumber(phoneNumber, appVerifier)
+          .then(function (confirmationResult) {
+            // SMS sent. Prompt user to type the code from the message, then sign the
+            // user in with confirmationResult.confirm(code).
+            window.confirmationResult = confirmationResult;
+            console.log('send')
+          }).catch(function (error) {
+            // Error; SMS not sent
+            // ...
+            console.log('not send')
+          });
     },
     cookieTest: function () {
 
