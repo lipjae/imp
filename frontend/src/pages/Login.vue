@@ -54,7 +54,7 @@
 
             <q-step
               :name="2"
-              title="Create an ad group"
+              title="휴대폰으로 전송된 인증코드를 입력해 주세요."
               caption="Optional"
               icon="create_new_folder"
               :done="step > 2"
@@ -63,22 +63,14 @@
               <q-input v-model="signUp.code" label="인증코드" stack-label  /> 
 
               <q-stepper-navigation>
-                <q-btn @click="step = 4" color="primary" label="Continue" />
+                <q-btn @click="insertSignUp()" color="primary" label="Continue" />
                 <q-btn flat @click="step = 1" color="primary" label="Back" class="q-ml-sm" />
               </q-stepper-navigation>
             </q-step>
 
+            
             <q-step
               :name="3"
-              title="Ad template"
-              icon="assignment"
-              disable
-            >
-              This step won't show up because it is disabled.
-            </q-step>
-
-            <q-step
-              :name="4"
               title="Create an ad"
               icon="add_comment"
             >
@@ -96,10 +88,7 @@
         </div>
       </div>
       
-    </div>
-
-
-      
+    </div>     
 
   </div>
 </template>
@@ -126,7 +115,8 @@ export default {
       },
       signUp : {
         phoneNum : '',
-        code : ''
+        code : '',
+        confirmationResult: ''
       },
       step: 1,
       customToken: '',
@@ -144,21 +134,20 @@ export default {
       switch(step){
 
         case 1 : 
+        
+        this.$nextTick(function(){
+          window.recaptchaVerifier = new firebase_.auth.RecaptchaVerifier('sign-in-button', {
+            'size': 'normal'
+          });
 
-        // window.recaptchaVerifier = new firebase_.auth.RecaptchaVerifier('sign-in-button', {
-        //   'size': 'normal',
-        //   'callback': function(response) {
-        //     // reCAPTCHA solved, allow signInWithPhoneNumber.
-        //     // ...
-        //   },
-        //   'expired-callback': function() {
-        //     alert('자동방지 인증이 만료되었습니다. 다시 해주세요.')
-        //   }
-        // });
+          grecaptcha.reset(window.recaptchaWidgetId);
 
-        window.recaptchaVerifier.render().then(function(widgetId) {
-          window.recaptchaWidgetId = widgetId;
-        });
+          // Or, if you haven't stored the widget ID:
+          window.recaptchaVerifier.render().then(function(widgetId) {
+            grecaptcha.reset(widgetId)
+          })
+        })
+        
 
         break
         
@@ -185,11 +174,7 @@ export default {
     } 
 
     window.recaptchaVerifier = new firebase_.auth.RecaptchaVerifier('sign-in-button', {
-      'size': 'invisible',
-      'callback': function(response) {
-        // reCAPTCHA solved, allow signInWithPhoneNumber.
-        // ...
-      }
+      'size': 'normal'
     });
 
     recaptchaVerifier.render().then(function(widgetId) {
@@ -249,24 +234,39 @@ export default {
       }
       
     },
-    getSignUpCode: function () {
+    getSignUpCode: async function () {
       
       auth.settings.appVerificationDisabledForTesting = true
 
       var phoneNumber = '+82' + this.signUp.phoneNum.replace(/(^0+)/, "");
       var appVerifier = window.recaptchaVerifier;
-      auth.signInWithPhoneNumber(phoneNumber, appVerifier)
-        .then(function (confirmationResult) {
-          debugger
-          window.confirmationResult = confirmationResult;
-          console.log('send')
-        }).catch(function (error) {
-          
-          debugger
-          console.log(error)
-        });
+        
+      try {
+        this.signUp.confirmationResult = await auth.signInWithPhoneNumber(phoneNumber, appVerifier)  
+        this.step = 2
+      } catch (error) {
+        
+        grecaptcha.reset(window.recaptchaWidgetId);
 
-      funcioj 
+        // Or, if you haven't stored the widget ID:
+        window.recaptchaVerifier.render().then(function(widgetId) {
+          grecaptcha.reset(widgetId)
+        })
+
+        alert(error.code)
+      }
+
+    },
+    insertSignUp: async function () {
+      var code = this.signUp.code
+
+      try {
+        var res = await this.signUp.confirmationResult.confirm(code)  
+        console.log(res.user)
+      } catch (error) {
+        alert(error)
+      }
+      
     },
     signInUP: function () {
 
