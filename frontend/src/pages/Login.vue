@@ -23,7 +23,7 @@
         <div id="naver_id_login"></div>
         <div id="naverIdLogin"></div>
         <q-btn color="primary" label="회원가입 진행" @click="signComp.isActive = !signComp.isActive"/>
-       
+       <button @click="test()">test</button>
       </div>
 
       <div class="signUpFrame">
@@ -35,6 +35,7 @@
           vertical
           color="primary"
           animated
+          ref="stepper"
           >
             <q-step
               :name="1"
@@ -71,12 +72,10 @@
             
             <q-step
               :name="3"
-              title="Create an ad"
+              title="회원가입을 축하합니다!"
               icon="add_comment"
             >
-              Try out different ad text to see what brings in the most customers, and learn how to
-              enhance your ads using features like ad extensions. If you run into any problems with
-              your ads, find out how to tell if they're running and how to resolve approval issues.
+              휴대폰 번호로 로그인을 해주세요.
 
               <q-stepper-navigation>
                 <q-btn color="primary" label="Finish" />
@@ -263,6 +262,7 @@ export default {
       try {
         var res = await this.signUp.confirmationResult.confirm(code)  
         console.log(res.user)
+        this.step = 3
       } catch (error) {
         alert(error)
       }
@@ -294,6 +294,9 @@ export default {
         .then(res => {
           console.log(res.data)
         })
+    },
+    test (){
+      debugger
     }
     
   }
