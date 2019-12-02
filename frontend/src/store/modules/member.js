@@ -5,13 +5,21 @@ import axios from 'axios'
 
 const state = {
   loginStatus: false,
-  crntUser : ''
+  crntUser : '',
+  signUp: {
+    phoneNum: '',
+    code: '',
+    confirmationResult: ''
+  }
 }
 
 const getters = {
   getLoginStatus: state => {
     console.log(state.loginStatus)
     return state.loginStatus
+  },
+  getSignUpStatus: state => {
+    return state.signUp
   }
 }
 
@@ -21,10 +29,14 @@ const mutations = {
   },
   setCrntUser(state, data){
     state.crntUser = data
+  },
+  setSignUpPhoneNum(state, data){
+    state.signUp.phoneNum = data
   }
 }
 const actions = {
-   
+
+  // kakao, naver 로그인 이후
   async afterLogin({ dispatch, commit, getters, rootGetters },userData) {
 
     var uid = '';
@@ -86,7 +98,7 @@ const actions = {
     }
     
   },
-  isSignIn ({commit}) {
+  isSignIn ({commit}) { // 로그인 감지
     
     auth.onAuthStateChanged(function (user) {
       if (user) {
@@ -100,11 +112,13 @@ const actions = {
     
 
   },
-  async fbCreateToken ({}, uid) {
+  // 파이어베이스 커스텀 토큰 생성
+  async fbCreateToken ({}, uid) { 
     return axios.post('/auth/fbCreateToken', uid).then(function(res){
       return res.data
     })
   },
+  // 로그아웃
   async signOut ({commit}) {
     firebase_.auth().signOut()
     commit('setLoginStatus',false)

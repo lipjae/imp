@@ -44,7 +44,7 @@
               :done="step > 1"
             >
 
-              <q-input v-model="signUp.phoneNum" label="전화번호" stack-label  />
+              <q-input v-model="signUpPhoneNum" label="전화번호" stack-label  />
               
               <div id="sign-in-button"></div>
 
@@ -112,11 +112,6 @@ export default {
         isActive : false,
         signIn : false
       },
-      signUp : {
-        phoneNum : '',
-        code : '',
-        confirmationResult: ''
-      },
       step: 1,
       customToken: '',
       kakaoToken: ''
@@ -124,8 +119,17 @@ export default {
   },
   computed: {
     ...mapGetters({
-      loginInfo : 'member/getLoginStatus'
-    })
+      loginInfo : 'member/getLoginStatus',
+      signUp : 'member/getSignUpStatus'
+    }),
+    signUpPhoneNum: {
+        get () {
+          return this.$store.state.member.signUp.phoneNum
+        },
+        set (value) {
+          this.$store.commit('member/setSignUpPhoneNum', value)
+        }
+      }
   },
   watch : {
     step : function (step){
@@ -183,7 +187,7 @@ export default {
   },
   methods: {
     ...mapMutations({
-      
+      setSignUpPhoneNum : 'memeber/setSignUpPhoneNum'
     }),
     ...mapActions({
       afterLogin: 'member/afterLogin'
