@@ -32,6 +32,9 @@ const mutations = {
   },
   setSignUpPhoneNum(state, data){
     state.signUp.phoneNum = data
+  },
+  setSignUpCode(state, data){
+    state.signUp.code = data
   }
 }
 const actions = {

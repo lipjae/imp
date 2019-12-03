@@ -61,7 +61,7 @@
               :done="step > 2"
             >
               
-              <q-input v-model="signUp.code" label="인증코드" stack-label  /> 
+              <q-input v-model="signUpCode" label="인증코드" stack-label  /> 
 
               <q-stepper-navigation>
                 <q-btn @click="insertSignUp()" color="primary" label="Continue" />
@@ -123,13 +123,21 @@ export default {
       signUp : 'member/getSignUpStatus'
     }),
     signUpPhoneNum: {
-        get () {
-          return this.$store.state.member.signUp.phoneNum
-        },
-        set (value) {
-          this.$store.commit('member/setSignUpPhoneNum', value)
-        }
+      get () {
+        return this.$store.state.member.signUp.phoneNum
+      },
+      set (value) {
+        this.$store.commit('member/setSignUpPhoneNum', value)
       }
+    },
+    signUpCode: {
+      get () {
+        return this.$store.state.member.signUp.code
+      },
+      set (value) {
+        this.$store.commit('member/setSignUpCode', value)
+      }
+    }
   },
   watch : {
     step : function (step){
@@ -139,16 +147,15 @@ export default {
         case 1 : 
         
         this.$nextTick(function(){
-          window.recaptchaVerifier = new firebase_.auth.RecaptchaVerifier('sign-in-button', {
-            'size': 'normal'
-          });
+          // window.recaptchaVerifier = new firebase_.auth.RecaptchaVerifier('sign-in-button', {
+          //   'size': 'invisible'
+          // });
 
           grecaptcha.reset(window.recaptchaWidgetId);
-
           // Or, if you haven't stored the widget ID:
-          window.recaptchaVerifier.render().then(function(widgetId) {
-            grecaptcha.reset(widgetId)
-          })
+          // window.recaptchaVerifier.render().then(function(widgetId) {
+          //   grecaptcha.reset(widgetId)
+          // })
         })
         
 
@@ -177,7 +184,10 @@ export default {
     } 
 
     window.recaptchaVerifier = new firebase_.auth.RecaptchaVerifier('sign-in-button', {
-      'size': 'normal'
+      'size': 'invisible',
+      'expired-callback': function() {
+        
+      }
     });
 
     recaptchaVerifier.render().then(function(widgetId) {
@@ -238,25 +248,26 @@ export default {
       
     },
     getSignUpCode: async function () {
-      
-      auth.settings.appVerificationDisabledForTesting = true
-
+            
       var phoneNumber = '+82' + this.signUp.phoneNum.replace(/(^0+)/, "");
-      var appVerifier = window.recaptchaVerifier;
-        
+      var appVerifier = recaptchaVerifier;
+      this.step = 2
+      
       try {
         this.signUp.confirmationResult = await auth.signInWithPhoneNumber(phoneNumber, appVerifier)  
         this.step = 2
+        
       } catch (error) {
         
-        grecaptcha.reset(window.recaptchaWidgetId);
+        // grecaptcha.reset(window.recaptchaWidgetId);
 
         // Or, if you haven't stored the widget ID:
         window.recaptchaVerifier.render().then(function(widgetId) {
           grecaptcha.reset(widgetId)
+          debugger
         })
-
-        alert(error.code)
+        
+        alert(error)
       }
 
     },
@@ -279,7 +290,7 @@ export default {
       }
       auth.settings.appVerificationDisabledForTesting = true;
       var phoneNumber = '+821022455126';
-      var appVerifier = window.recaptchaVerifier;
+      var appVerifier = recaptchaVerifier;
       auth.signInWithPhoneNumber(phoneNumber, appVerifier)
           .then(function (confirmationResult) {
             // SMS sent. Prompt user to type the code from the message, then sign the
