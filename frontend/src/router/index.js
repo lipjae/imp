@@ -22,11 +22,19 @@ export default function ( { store, ssrContext } ) {
     base: process.env.VUE_ROUTER_BASE
   })
 
-  Router.beforeEach(async (to, from, next) => {
+  Router.beforeEach((to, from, next) => {
     
     store.dispatch('member/isSignIn')
 
-    next()
+    const loginStatus = store.state.member.loginStatus
+
+    if (!loginStatus && to.path !== '/signIn' && to.path !== '/signUp'){
+      next({ path: '/signIn' })      
+    }else{
+      next()
+    }
+
+    
   })
 
   // Router.beforeEach(async (to, from, next) => {
