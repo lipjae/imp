@@ -28,8 +28,8 @@ export default function ( { store, ssrContext } ) {
 
     const loginStatus = store.state.member.loginStatus
 
-    if (!loginStatus && to.path !== '/signIn' && to.path !== '/signUp'){
-      next({ path: '/signIn' })      
+    if (!loginStatus && to.path !== '/signInUp'){
+      next({ path: '/signInUp' })      
     }else{
       next()
     }

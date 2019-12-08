@@ -18,7 +18,7 @@ export default {
   },
   methods: {
     moveSignUp () {
-      this.$router.push('/signUp')
+      this.$router.push('/signInUp')
     }
   },
 }

@@ -14,9 +14,9 @@
       </q-toolbar>
     </q-header>
 
-    <q-drawer show-if-above v-model="left" side="left" bordered>
+    <q-drawer show-if-above v-model="left" v-if="loginStatus == true" side="left" bordered>
       <!-- drawer content -->
-      <q-list bordered padding class="rounded-borders text-primary" v-if="loginInfo">
+      <q-list bordered padding class="rounded-borders text-primary" v-if="loginStatus">
         <q-item
           clickable
           v-ripple
@@ -88,6 +88,12 @@
 
           <q-item-section>Help</q-item-section>
         </q-item>
+
+        <q-item class="logout-btn" v-if="loginStatus == true">
+          <q-btn color="negative" label="logout" @click="signOut()" />
+        </q-item>
+
+
       </q-list>
     </q-drawer>
 
@@ -111,9 +117,14 @@ export default {
   },
   computed: {
     ...mapGetters({
-      loginInfo : 'member/getLoginStatus',
+      loginStatus : 'member/getLoginStatus',
     })
   },
+  methods: {
+    signOut () {
+      this.$store.dispatch('member/signOut')
+    }
+  }
 }
 </script>
 <style lang="sass">
